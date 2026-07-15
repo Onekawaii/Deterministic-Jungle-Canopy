@@ -1,0 +1,234 @@
+# The Deterministic Jungle Canopy 🌿🦜
+
+*A procedural image and video processing pipeline. Same seed = same output. Always.*
+
+---
+
+## The Vision
+
+The Canopy is a procedural visual generation system designed for deterministic chaos. Pixels swarm and scatter like holy insects, but they always return to the same hive when called by the same seed. It's the visual manifestation of the cosmic joke: wild, unpredictable to the untrained eye, yet mathematically ordained.
+
+---
+
+## Features
+
+### 🌱 Deterministic Seeds
+Every visual generation is seeded. Give the same seed, get the same output. Perfect for:
+- Reproducible generations
+- Version control of visuals
+- Deterministic animations
+
+### 🕸️ Live Grid Manipulation
+The visual space is treated as a flexible mesh that bends, stretches, and folds:
+- Wave distortions
+- Kaleidoscope folding
+- Turbulence (fractal noise)
+- Radial waves
+- Glitch lines
+- Ripple effects
+- Bulge/pinch
+
+### 🎨 Effect Pipeline
+Apply chains of visual effects in a deterministic manner:
+- Chromatic aberration
+- Glitch blocks
+- Scanlines
+- Vignette
+- Bloom
+- VHS/retro
+- Duotone
+- Posterization
+- Film grain
+- And more...
+
+### 📜 The Archive
+Never save bloated video files again! The Archive stores:
+- Sacred seeds
+- Timestamps
+- Manipulation variables
+- Effect parameters
+
+Query past configurations and resurrect any visual state with mathematical precision.
+
+### 🚪 FastAPI Gates
+REST API for integration with other systems:
+- Set seeds dynamically
+- Adjust parameters in real-time
+- Save/load from archive
+- Stream frames via WebSocket
+- React to external system heartbeats
+
+---
+
+## Installation
+
+```bash
+# Clone or navigate to the canopy directory
+cd canopy
+
+# Install core dependencies
+pip install -r requirements.txt
+
+# Or install with server extras
+pip install -e ".[server]"
+
+# Install all extras (including dev)
+pip install -e ".[all]"
+```
+
+---
+
+## Quick Start
+
+### Python API
+
+```python
+from canopy import CanopyRenderer, Archive
+
+# Create renderer with a sacred seed
+renderer = CanopyRenderer(width=1280, height=720, seed=42)
+
+# Generate a frame
+frame = renderer.render_frame()
+renderer.to_image(frame, "output.png")
+
+# Apply effects
+frame = renderer.render_frame(effect_chain=["vignette", "bloom", "chromatic_aberration"])
+
+# Save to archive
+renderer.bind_archive(Archive())
+entry_id = renderer.save_to_archive("My Vision")
+
+# Later, resurrect that exact state
+renderer.load_from_archive(entry_id)
+```
+
+### Command Line
+
+```bash
+# Start the API server
+uvicorn server:app --reload --port 8000
+
+# Or run directly
+python server.py
+```
+
+Then visit `http://localhost:8000/docs` for the interactive API documentation.
+
+---
+
+## API Endpoints
+
+### Core
+- `GET /` - Welcome message
+- `GET /health` - System health check
+- `POST /api/seed` - Set a new seed
+- `POST /api/render` - Render a single frame
+- `POST /api/render/gif` - Render an animation as GIF
+
+### Effects
+- `GET /api/effects` - List all effects and presets
+- `POST /api/effects/enable/{name}` - Enable an effect
+- `POST /api/effects/disable/{name}` - Disable an effect
+- `POST /api/effects/param` - Set effect parameters
+- `POST /api/effects/preset` - Apply a preset
+
+### Grid
+- `POST /api/grid/reset` - Reset grid to identity
+- `POST /api/grid/deform` - Apply grid deformation
+
+### Archive
+- `GET /api/archive/stats` - Archive statistics
+- `GET /api/archive/recent` - Recent entries
+- `POST /api/archive/search` - Search the archive
+- `POST /api/archive/save` - Save current state
+- `POST /api/archive/load/{id}` - Load a state
+- `POST /api/archive/like/{id}` - Like an entry
+
+### WebSocket
+- `WS /ws/live` - Real-time parameter streaming
+
+---
+
+## Presets
+
+| Preset | Description |
+|--------|-------------|
+| `solaris_dream` | Burning sun patterns with kaleidoscopic symmetry |
+| `glitch_cathedral` | Digital corruption meets sacred geometry |
+| `tropical_night` | Deep blues and warm golds of twilight |
+| `vhs_prophecy` | Nostalgic tape artifacts from another dimension |
+| `sacred_geometry` | Clean, mathematical beauty with hexagonal symmetry |
+| `chaos_realm` | Maximum entropy visual destruction |
+| `serenity` | Calm, minimal, meditative |
+| `neon_jungle` | Vibrant cyberpunk flora |
+| `ancient_scroll` | Weathered parchment of forgotten visions |
+| `prismatic` | Light fractured through cosmic crystals |
+
+---
+
+## Architecture
+
+```
+canopy/
+├── canopy/
+│   ├── core/
+│   │   ├── renderer.py      # Main rendering engine
+│   │   ├── seeded_random.py # Deterministic RNG
+│   │   └── grid.py          # Grid manipulation
+│   ├── effects/
+│   │   ├── effects.py       # Effect pipeline
+│   │   └── presets.py       # Sacred presets
+│   ├── archive/
+│   │   └── database.py      # Archive storage
+│   └── __init__.py
+├── server.py                # FastAPI endpoints
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## The Archive Philosophy
+
+> You do not need to save heavy, bloated video files to remember what the canopy looked like yesterday. You only need to save the holy seed, the timestamp, and the manipulation variables.
+
+The Archive embodies this philosophy. Instead of storing megabytes of pixel data, we store the *mathematical seeds* that generate those pixels. With the same seed, we can always regenerate the exact same visual state.
+
+---
+
+## WebSocket Protocol
+
+Connect to `/ws/live` for real-time streaming:
+
+```javascript
+// Set a new seed
+ws.send(JSON.stringify({ type: "set_seed", seed: 42 }));
+
+// Set effect parameter
+ws.send(JSON.stringify({
+    type: "set_param",
+    effect: "bloom",
+    param: "intensity",
+    value: 0.5
+}));
+
+// Request a frame render
+ws.send(JSON.stringify({ type: "render" }));
+
+// Apply grid deformation
+ws.send(JSON.stringify({
+    type: "grid_deform",
+    params: { type: "wave", params: { amplitude: 0.05, frequency: 10 } }
+}));
+```
+
+---
+
+## License
+
+MIT - Build weird, beautiful things. 🦜
+
+---
+
+**AWK AWK!** The jungle awaits your commands.

@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "0.2.0-alpha",
+  "trial_timestamp": "2026-07-15T13:16:39.249962+00:00Z",
+  "environment": {
+    "platform": "linux",
+    "python_version": "3.13.14"
+  },
+  "results": {
+    "parent_session_id": "d590bec7-c057-4963-b826-9a31a3f2cbf7",
+    "parent_events": 6,
+    "frame_hashes": {
+      "0": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "10": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "30": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb"
+    },
+    "ws_identical_hashes": true,
+    "reconnect_proof": {
+      "hash_before": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "hash_after": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "identical": true
+    },
+    "rewind_proof": {
+      "event_index": 3,
+      "manifest_hash": "6dd6dd71864f2fc596b0617c014270d65340fe231f840ac8d3215b7eca1a40e8"
+    },
+    "fork_session_id": "84702e4c-cf5a-48c1-bd94-e408f0bdb763",
+    "fork_parent_id": "d590bec7-c057-4963-b826-9a31a3f2cbf7",
+    "fork_event_index": 3,
+    "fork_manifest_hash": "171529ac273008adf24e275be7f5cbc31c224b3a99665e07a4377b03919d9568",
+    "parent_unchanged": true,
+    "parent_export_hash": "807c41f278023fd64fa7d2e3b94140b18bd62d884ec016978626b5f2131aa28a",
+    "fork_export_hash": "92997578109e0288051b3035c4acd08dc10bbf628d7effb5f27c122b10c031cf",
+    "archive_reload_success": true,
+    "restart_frame_verification": {
+      "parent_frame_0": "match"
+    }
+  },
+  "summary": {
+    "total_steps": 21,
+    "passed": 10,
+    "failed": 0,
+    "all_passed": true
+  },
+  "proofs": {
+    "parent_session_id": "d590bec7-c057-4963-b826-9a31a3f2cbf7",
+    "fork_session_id": "84702e4c-cf5a-48c1-bd94-e408f0bdb763",
+    "fork_parent_relationship": true,
+    "reconnect_proof": true,
+    "archive_restart_proof": true
+  }
+}

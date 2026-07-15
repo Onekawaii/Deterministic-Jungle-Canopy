@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "0.2.0-alpha",
+  "trial_timestamp": "2026-07-15T13:37:05.530597+00:00Z",
+  "environment": {
+    "platform": "linux",
+    "python_version": "3.13.14"
+  },
+  "results": {
+    "parent_session_id": "33d9f8c9-8ecc-4750-9452-a621436f5285",
+    "parent_events": 6,
+    "frame_hashes": {
+      "0": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "10": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "30": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb"
+    },
+    "ws_identical_hashes": true,
+    "reconnect_proof": {
+      "hash_before": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "hash_after": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+      "identical": true
+    },
+    "rewind_proof": {
+      "event_index": 3,
+      "manifest_hash": "6dd6dd71864f2fc596b0617c014270d65340fe231f840ac8d3215b7eca1a40e8"
+    },
+    "fork_session_id": "14374da2-de0c-47ce-8c57-9530bafc8afa",
+    "fork_parent_id": "33d9f8c9-8ecc-4750-9452-a621436f5285",
+    "fork_event_index": 3,
+    "fork_manifest_hash": "171529ac273008adf24e275be7f5cbc31c224b3a99665e07a4377b03919d9568",
+    "parent_unchanged": true,
+    "parent_export_hash": "dd675d945145e1a1c47631617d35e8a0fe584654553c9f4754c4cb6093f14705",
+    "fork_export_hash": "5812bec73dc2a8188197517748c4b555eccfa73263ee3ee4ca214c43b8d78366",
+    "archive_reload_success": true,
+    "restart_frame_verification": {
+      "parent_frame_0": "match"
+    }
+  },
+  "summary": {
+    "workflow_steps": 21,
+    "assertions_total": 14,
+    "assertions_passed": 8,
+    "assertions_failed": 0,
+    "all_passed": true
+  },
+  "proofs": {
+    "parent_session_id": "33d9f8c9-8ecc-4750-9452-a621436f5285",
+    "fork_session_id": "14374da2-de0c-47ce-8c57-9530bafc8afa",
+    "fork_parent_relationship": true,
+    "reconnect_proof": true,
+    "archive_restart_proof": true
+  },
+  "residual_risks": [
+    "high-load WebSocket backpressure",
+    "multi-process session-store consistency",
+    "archive schema migration",
+    "dependency/version drift",
+    "hostile or oversized import payloads"
+  ],
+  "known_blocking_risks": []
+}

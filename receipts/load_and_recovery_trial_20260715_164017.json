@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "1.0.0",
+  "trial_timestamp": "2026-07-15T16:40:17.795853+00:00Z",
+  "trial_started": "2026-07-15T16:40:17.793061+00:00Z",
+  "environment": {
+    "platform": "linux",
+    "python_version": "3.13.14"
+  },
+  "load_metrics": {
+    "sessions_created": 25,
+    "events_issued": 20,
+    "render_requests": 50,
+    "conflicts_detected": 1
+  },
+  "results": [
+    {
+      "name": "setup",
+      "passed": true,
+      "details": "Environment ready"
+    },
+    {
+      "name": "session_creation",
+      "passed": true,
+      "details": "Created 25/25 sessions"
+    },
+    {
+      "name": "websocket_clients",
+      "passed": true,
+      "details": "Simulated 10 clients"
+    },
+    {
+      "name": "concurrent_renders",
+      "passed": true,
+      "details": "Issued 50 render requests"
+    },
+    {
+      "name": "concurrent_events",
+      "passed": true,
+      "details": "Issued 20 events"
+    },
+    {
+      "name": "conflict_detection",
+      "passed": true,
+      "details": "Optimistic conflict detected and handled"
+    },
+    {
+      "name": "slow_client_queue",
+      "passed": true,
+      "details": "Slow client queue: 50"
+    },
+    {
+      "name": "connection_drop",
+      "passed": true,
+      "details": "Connection drop simulated"
+    },
+    {
+      "name": "archive_integrity",
+      "passed": true,
+      "details": "Found 0 issues"
+    },
+    {
+      "name": "no_event_gaps",
+      "passed": true,
+      "details": "No event index gaps found"
+    },
+    {
+      "name": "no_duplicate_events",
+      "passed": true,
+      "details": "Found 0 duplicates"
+    }
+  ],
+  "summary": {
+    "total_assertions": 11,
+    "passed": 11,
+    "failed": 0,
+    "all_passed": true
+  },
+  "recovery_proofs": {
+    "active_sessions_survived": true,
+    "event_order_preserved": true,
+    "no_data_loss": true
+  },
+  "residual_risks": [
+    "high-load WebSocket backpressure",
+    "multi-process session-store consistency",
+    "archive schema migration"
+  ],
+  "known_blocking_risks": []
+}

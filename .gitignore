@@ -10,10 +10,6 @@ __pycache__/
 *.db-shm
 *.db-wal
 
-# Generated directories
-receipts/*.json
-!receipts/SAMPLE_RECEIPT.md
-
 # IDE
 .vscode/
 .idea/

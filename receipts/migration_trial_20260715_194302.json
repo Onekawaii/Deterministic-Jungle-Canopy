@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "1.0.0",
+  "trial_type": "migration",
+  "trial_timestamp": "2026-07-15T19:43:02.377579+00:00Z",
+  "trial_started": "2026-07-15T19:43:02.357318+00:00Z",
+  "results": [
+    {
+      "name": "v1_to_v2_migration",
+      "passed": true,
+      "details": "schema_version=2.0"
+    },
+    {
+      "name": "v2_validation",
+      "passed": true,
+      "details": "Valid v2 manifest accepted"
+    },
+    {
+      "name": "unsupported_rejection",
+      "passed": true,
+      "details": "Correctly rejected vUNSUPPORTED_SCHEMA"
+    },
+    {
+      "name": "backup_creation",
+      "passed": true,
+      "details": "Backup at /tmp/canopy_migration_9m689als/backups/test_archive_20260715_194302.db"
+    },
+    {
+      "name": "idempotency",
+      "passed": true,
+      "details": "Double migration produces identical result"
+    },
+    {
+      "name": "rollback",
+      "passed": true,
+      "details": "Original content restored"
+    }
+  ],
+  "workflow_steps": 6,
+  "assertions_total": 6,
+  "assertions_passed": 6,
+  "assertions_failed": 0,
+  "assertions_skipped": 0,
+  "all_passed": true
+}

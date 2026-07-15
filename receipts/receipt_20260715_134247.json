@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "0.2.0-alpha",
+  "trial_timestamp": "2026-07-15T13:42:47.027936+00:00Z",
+  "environment": {
+    "platform": "Linux-6.8.0-1051-gke-x86_64-with-glibc2.41",
+    "python_version": "3.13.14 (main, Jun 11 2026, 01:07:55) [GCC 14.2.0]",
+    "canopy_version": "0.2.0-alpha",
+    "schema_version": "1.0",
+    "numpy_version": "2.5.1",
+    "scipy_version": "1.18.0"
+  },
+  "results": [
+    {
+      "name": "same_process_identical",
+      "description": "Same manifest, same process, two renders",
+      "passed": true,
+      "hash_pairs": {
+        "first_render": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+        "second_render": "fa3263af2f75f798a47a0d321055e10dba0f7080d7141445a48c8e0918ad48eb",
+        "match": true
+      }
+    },
+    {
+      "name": "fresh_process_identical",
+      "description": "Same manifest rendered in subprocess vs main process",
+      "passed": true,
+      "hash_pairs": {
+        "subprocess_render": "3ce086fa4cacffa0cb38342d23dfb0620af18dc8df0d4ed9ec1e702691488526",
+        "local_render": "3ce086fa4cacffa0cb38342d23dfb0620af18dc8df0d4ed9ec1e702691488526",
+        "match": true
+      }
+    },
+    {
+      "name": "archive_roundtrip",
+      "description": "State saved to archive, then loaded and rendered",
+      "passed": true,
+      "hash_pairs": {
+        "before_save": "cb7e97cd50cb9d462e05e593c16032d1d1012a368d7bbb589cd634ab1ad18f4c",
+        "after_load": "cb7e97cd50cb9d462e05e593c16032d1d1012a368d7bbb589cd634ab1ad18f4c",
+        "match": true
+      }
+    },
+    {
+      "name": "all_presets_deterministic",
+      "description": "Each preset produces same output with same seed",
+      "passed": true
+    },
+    {
+      "name": "different_seed_different_output",
+      "description": "Different seeds produce different hashes (no collision)",
+      "passed": true
+    }
+  ],
+  "summary": {
+    "total_tests": 5,
+    "passed": 5,
+    "failed": 0,
+    "all_passed": true
+  },
+  "contract": {
+    "same_manifest_same_output": true,
+    "archive_reload_identical": true,
+    "presets_deterministic": true,
+    "cross_process_verified": true
+  }
+}

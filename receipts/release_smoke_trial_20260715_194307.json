@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "1.0.0",
+  "trial_type": "release_smoke",
+  "trial_timestamp": "2026-07-15T19:43:07.302377+00:00Z",
+  "trial_started": "2026-07-15T19:43:07.255073+00:00Z",
+  "release_zip": "dist/deterministic-jungle-canopy-v1.0.0.zip",
+  "results": [
+    {
+      "name": "extract_release",
+      "passed": true,
+      "details": "Extracted to /tmp/canopy_smoke_5mgot18t/release"
+    },
+    {
+      "name": "doctor",
+      "passed": false,
+      "details": "Doctor script not found"
+    },
+    {
+      "name": "server_start",
+      "passed": false,
+      "details": "Server script not found"
+    },
+    {
+      "name": "health_endpoint",
+      "passed": false,
+      "details": "<urlopen error [Errno 99] Cannot assign requested address>"
+    },
+    {
+      "name": "control_room_route",
+      "passed": false,
+      "details": "<urlopen error [Errno 99] Cannot assign requested address>"
+    },
+    {
+      "name": "create_session",
+      "passed": false,
+      "details": "<urlopen error [Errno 99] Cannot assign requested address>"
+    },
+    {
+      "name": "render_frame",
+      "passed": false,
+      "details": "No session created"
+    },
+    {
+      "name": "export_import",
+      "passed": false,
+      "details": "No session created"
+    },
+    {
+      "name": "sequence_export",
+      "passed": false,
+      "details": "No session created"
+    }
+  ],
+  "workflow_steps": 9,
+  "assertions_total": 9,
+  "assertions_passed": 1,
+  "assertions_failed": 8,
+  "assertions_skipped": 0,
+  "all_passed": false
+}

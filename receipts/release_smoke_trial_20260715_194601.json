@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "engine_version": "1.0.0",
+  "trial_type": "release_smoke",
+  "trial_timestamp": "2026-07-15T19:46:01.718362+00:00Z",
+  "trial_started": "2026-07-15T19:45:56.764946+00:00Z",
+  "release_zip": "dist/deterministic-jungle-canopy-v1.0.0.zip",
+  "results": [
+    {
+      "name": "extract_release",
+      "passed": true,
+      "details": "Extracted to /tmp/canopy_smoke_okz15dr4/release"
+    },
+    {
+      "name": "doctor",
+      "passed": true,
+      "details": "All checks passed"
+    },
+    {
+      "name": "server_start",
+      "passed": true,
+      "details": "Server started on port 18000 (PID: 1049)"
+    },
+    {
+      "name": "health_endpoint",
+      "passed": true,
+      "details": "Status: healthy"
+    },
+    {
+      "name": "control_room_route",
+      "passed": false,
+      "details": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "create_session",
+      "passed": true,
+      "details": "Session: 77d3c24b-1e43-4451-a304-4113ce148699"
+    },
+    {
+      "name": "render_frame",
+      "passed": false,
+      "details": "HTTP Error 404: Not Found"
+    },
+    {
+      "name": "export_import",
+      "passed": false,
+      "details": "HTTP Error 500: Internal Server Error"
+    },
+    {
+      "name": "sequence_export",
+      "passed": false,
+      "details": "HTTP Error 500: Internal Server Error"
+    }
+  ],
+  "workflow_steps": 9,
+  "assertions_total": 9,
+  "assertions_passed": 5,
+  "assertions_failed": 4,
+  "assertions_skipped": 0,
+  "all_passed": false
+}

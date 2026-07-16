@@ -6,15 +6,23 @@
     <title>The Deterministic Jungle Canopy - Control Room</title>
     <style>
         :root {
-            --jungle-dark: #0a1a0f;
-            --jungle-mid: #1a3320;
-            --jungle-light: #2d5a3a;
-            --accent-green: #00ff88;
-            --accent-amber: #ffaa00;
-            --accent-red: #ff4444;
-            --text-primary: #e0ffe0;
-            --text-secondary: #88aa88;
-            --border-color: #2d5a3a;
+            --banana: #ffd84d;
+            --banana-dark: #d8a900;
+            --banana-light: #ffec8a;
+            --leaf: #2f7d32;
+            --leaf-dark: #174d24;
+            --leaf-light: #4caf50;
+            --jungle: #0f3d24;
+            --jungle-mid: #1a5c3a;
+            --cream: #fff8dc;
+            --cream-dark: #f5e6c8;
+            --bark: #6b4423;
+            --bark-light: #8b5a2b;
+            --danger: #b83a3a;
+            --warning: #d98b21;
+            --success: #2d8a4a;
+            --text-dark: #2d2d2d;
+            --text-light: #f5f5f5;
         }
 
         * {
@@ -24,32 +32,65 @@
         }
 
         body {
-            font-family: 'Courier New', monospace;
-            background: var(--jungle-dark);
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, var(--jungle) 0%, var(--jungle-mid) 100%);
+            color: var(--text-light);
             min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Header */
+        :focus-visible {
+            outline: 3px solid var(--banana);
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
         .header {
-            background: linear-gradient(135deg, var(--jungle-mid), var(--jungle-dark));
-            border-bottom: 2px solid var(--accent-green);
+            background: linear-gradient(135deg, var(--leaf-dark), var(--jungle));
+            border-bottom: 3px solid var(--banana);
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo { font-size: 2rem; }
+
         .header h1 {
-            color: var(--accent-green);
-            font-size: 1.5rem;
-            text-shadow: 0 0 10px var(--accent-green);
+            color: var(--banana);
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .canopy-name {
+            color: var(--cream);
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .status-bar {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
         }
 
@@ -58,188 +99,173 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            background: var(--jungle-dark);
-            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
             font-size: 0.85rem;
+            border: 1px solid var(--leaf);
         }
 
         .status-dot {
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: var(--accent-red);
+            background: var(--danger);
         }
 
         .status-dot.connected {
-            background: var(--accent-green);
-            box-shadow: 0 0 8px var(--accent-green);
+            background: var(--leaf-light);
+            box-shadow: 0 0 8px var(--leaf-light);
         }
 
-        /* Main Layout */
+        .status-dot.reconnecting {
+            background: var(--warning);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .main-container {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-columns: 280px 1fr 320px;
             gap: 1rem;
             padding: 1rem;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 70px);
+            padding-bottom: 60px;
         }
 
-        /* Panels */
         .panel {
-            background: var(--jungle-mid);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            background: var(--cream);
+            border-radius: 16px;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            color: var(--text-dark);
         }
 
         .panel-header {
-            background: var(--jungle-dark);
+            background: linear-gradient(135deg, var(--leaf), var(--leaf-dark));
             padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: bold;
-            color: var(--accent-green);
+            font-weight: 600;
+            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 1rem;
         }
 
-        .panel-content {
-            padding: 1rem;
-        }
+        .panel-content { padding: 1rem; }
 
-        /* Left Column - Controls */
-        .control-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .control-label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        input[type="number"], input[type="text"], select {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--jungle-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        input[type="number"]:focus, input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-green);
-            box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
-        }
-
-        /* Slider - transient preview */
-        input[type="range"] {
-            width: 100%;
-            height: 6px;
-            -webkit-appearance: none;
-            background: var(--jungle-dark);
-            border-radius: 3px;
-            margin: 0.5rem 0;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .slider-value {
-            font-size: 0.85rem;
-            color: var(--accent-amber);
-            margin-top: 0.25rem;
-        }
-
-        .transient-indicator {
-            font-size: 0.7rem;
-            color: var(--accent-amber);
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .transient-indicator.visible {
-            opacity: 1;
-        }
-
-        /* Buttons */
         .btn {
             padding: 0.75rem 1rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             font-family: inherit;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            font-weight: 500;
         }
 
         .btn-primary {
-            background: var(--accent-green);
-            color: var(--jungle-dark);
-            font-weight: bold;
+            background: linear-gradient(135deg, var(--banana), var(--banana-dark));
+            color: var(--text-dark);
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255,216,77,0.4);
         }
 
         .btn-primary:hover {
-            box-shadow: 0 0 15px var(--accent-green);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,216,77,0.5);
         }
 
         .btn-secondary {
-            background: var(--jungle-light);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: var(--accent-green);
-            color: var(--jungle-dark);
-        }
-
-        .btn-danger {
-            background: var(--accent-red);
+            background: linear-gradient(135deg, var(--leaf-light), var(--leaf));
             color: white;
         }
 
-        .btn-danger:hover {
-            box-shadow: 0 0 15px var(--accent-red);
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76,175,80,0.4);
         }
 
-        .btn-group {
+        .btn-danger {
+            background: linear-gradient(135deg, #e57373, var(--danger));
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--bark);
+            color: var(--bark);
+        }
+
+        .btn-outline:hover {
+            background: var(--bark);
+            color: white;
+        }
+
+        .btn-sm { padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        .session-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .session-item {
+            padding: 0.75rem;
+            background: var(--cream-dark);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .session-item:hover {
+            border-color: var(--leaf);
+            transform: translateX(4px);
+        }
+
+        .session-item.active {
+            border-color: var(--banana);
+            background: var(--banana-light);
+        }
+
+        .session-name {
+            font-weight: 600;
+            color: var(--jungle);
             display: flex;
+            align-items: center;
             gap: 0.5rem;
-            flex-wrap: wrap;
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .session-meta { font-size: 0.75rem; color: #666; margin-top: 0.25rem; }
 
-        /* Center Column - Canvas */
-        .canvas-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+        .left-actions { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .canvas-container { display: flex; flex-direction: column; gap: 1rem; }
 
         .canvas-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
+            background: var(--cream);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .canvas-header {
+            background: var(--bark);
+            padding: 0.75rem 1rem;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .canvas-wrapper {
@@ -247,8 +273,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #000;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
             min-height: 400px;
             position: relative;
         }
@@ -257,1107 +282,944 @@
             max-width: 100%;
             max-height: 100%;
             image-rendering: pixelated;
+            border-radius: 4px;
         }
 
-        .canvas-overlay {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
+        .canvas-placeholder {
+            text-align: center;
+            color: var(--leaf-light);
+            padding: 2rem;
         }
+
+        .canvas-placeholder .icon { font-size: 4rem; margin-bottom: 1rem; }
+
+        .frame-controls {
+            background: var(--cream);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .frame-nav { display: flex; align-items: center; gap: 0.5rem; }
+
+        .frame-display {
+            font-weight: 600;
+            color: var(--jungle);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .frame-slider { flex: 1; min-width: 150px; }
+
+        .quick-canopy { display: flex; flex-direction: column; gap: 1rem; }
+
+        .control-group { margin-bottom: 1rem; }
+
+        .control-label {
+            color: var(--bark);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .control-hint { color: #888; font-size: 0.75rem; margin-top: 0.25rem; }
+
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 0.75rem;
+            background: white;
+            border: 2px solid var(--cream-dark);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus { outline: none; border-color: var(--leaf); }
+
+        .seed-input-group { display: flex; gap: 0.5rem; }
+        .seed-input-group input { flex: 1; }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--cream-dark);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--leaf-light), var(--leaf));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .slider-value { font-size: 0.85rem; color: var(--bark); font-weight: 600; }
+
+        .effect-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+
+        .effect-card {
+            background: white;
+            border-radius: 8px;
+            padding: 0.75rem;
+            border: 2px solid var(--cream-dark);
+            transition: all 0.2s;
+        }
+
+        .effect-card.active {
+            border-color: var(--leaf);
+            background: rgba(76,175,80,0.1);
+        }
+
+        .effect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .effect-name { font-weight: 600; font-size: 0.85rem; color: var(--jungle); }
+
+        .effect-toggle {
+            width: 40px;
+            height: 22px;
+            background: var(--cream-dark);
+            border-radius: 11px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .effect-toggle.active { background: var(--leaf); }
+
+        .effect-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .effect-toggle.active::after { transform: translateX(18px); }
+
+        .effect-hint { font-size: 0.7rem; color: #888; }
+
+        .advanced-panel {
+            margin-top: 1rem;
+            border-top: 2px dashed var(--cream-dark);
+            padding-top: 1rem;
+        }
+
+        .advanced-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--bark);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            background: var(--cream-dark);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .advanced-toggle:hover { background: var(--banana-light); }
+        .advanced-toggle .icon { transition: transform 0.2s; }
+        .advanced-toggle.open .icon { transform: rotate(90deg); }
+
+        .advanced-content { display: none; margin-top: 1rem; }
+        .advanced-content.visible { display: block; }
 
         .hash-display {
             font-family: monospace;
             font-size: 0.7rem;
             word-break: break-all;
-        }
-
-        .hash-display .label {
-            color: var(--text-secondary);
-        }
-
-        .hash-display .value {
-            color: var(--accent-amber);
-        }
-
-        /* Timeline */
-        .timeline-container {
-            background: var(--jungle-dark);
+            background: white;
+            padding: 0.5rem;
             border-radius: 4px;
-            padding: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .hash-label { color: #888; font-size: 0.7rem; }
+
+        .timeline-container {
+            background: var(--cream);
+            border-radius: 16px;
+            padding: 1rem;
         }
 
         .timeline-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
+
+        .timeline-title { font-weight: 600; color: var(--bark); }
 
         .timeline-events {
             display: flex;
             gap: 0.25rem;
             flex-wrap: wrap;
-            max-height: 120px;
+            max-height: 100px;
             overflow-y: auto;
         }
 
         .timeline-event {
             width: 24px;
             height: 24px;
-            background: var(--jungle-light);
+            background: var(--leaf);
             border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.65rem;
+            color: white;
             cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
+            transition: transform 0.2s;
         }
 
-        .timeline-event:hover {
-            background: var(--accent-green);
-            color: var(--jungle-dark);
-        }
+        .timeline-event:hover { transform: scale(1.2); }
 
-        .timeline-event.current {
-            border-color: var(--accent-green);
-            box-shadow: 0 0 8px var(--accent-green);
-        }
-
-        .timeline-event.rewound {
-            background: var(--accent-amber);
-            color: var(--jungle-dark);
-        }
-
-        /* Right Column - Session Info */
-        .session-info {
-            margin-bottom: 1rem;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.85rem;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            color: var(--text-secondary);
-        }
-
-        .info-value {
-            color: var(--accent-amber);
-            font-family: monospace;
-        }
-
-        /* Fork Tree */
-        .fork-tree {
-            margin-top: 1rem;
-        }
-
-        .fork-item {
-            padding: 0.5rem;
-            background: var(--jungle-dark);
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-        }
-
-        .fork-item.current {
-            border-left: 3px solid var(--accent-green);
-        }
-
-        .fork-item .session-id {
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        /* Archive Browser */
-        .archive-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .archive-item {
-            padding: 0.75rem;
-            background: var(--jungle-dark);
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .archive-item:hover {
-            background: var(--jungle-light);
-            border-left: 3px solid var(--accent-green);
-        }
-
-        .archive-item.selected {
-            border: 1px solid var(--accent-green);
-        }
-
-        .archive-item .name {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-
-        .archive-item .meta {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        /* Effect Stack */
-        .effect-stack {
-            margin-top: 1rem;
-        }
-
-        .effect-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: var(--jungle-dark);
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-        }
-
-        .effect-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent-green);
-        }
-
-        .effect-item .name {
-            flex: 1;
-        }
-
-        .effect-item .params {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        /* Error Display */
-        .error-display {
-            background: rgba(255, 68, 68, 0.1);
-            border: 1px solid var(--accent-red);
-            border-radius: 4px;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            display: none;
-        }
-
-        .error-display.visible {
-            display: block;
-        }
-
-        .error-display .error-code {
-            color: var(--accent-red);
-            font-weight: bold;
-        }
-
-        .error-display .error-detail {
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        /* Modal */
-        .modal-overlay {
+        .status-bar-bottom {
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
+            background: linear-gradient(135deg, var(--bark), var(--bark-light));
+            padding: 0.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--cream);
+            border-top: 2px solid var(--banana);
+        }
+
+        .status-left, .status-right { display: flex; gap: 1rem; align-items: center; }
+        .status-item { display: flex; align-items: center; gap: 0.25rem; }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
         }
 
-        .modal-overlay.visible {
-            display: flex;
-        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
 
         .modal {
-            background: var(--jungle-mid);
-            border: 2px solid var(--accent-green);
-            border-radius: 8px;
-            padding: 2rem;
+            background: var(--cream);
+            border-radius: 16px;
             max-width: 500px;
             width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
         }
 
-        .modal h2 {
-            color: var(--accent-green);
-            margin-bottom: 1rem;
-        }
+        .modal-overlay.visible .modal { transform: scale(1); }
 
-        .modal-actions {
+        .modal-header {
+            background: linear-gradient(135deg, var(--leaf), var(--leaf-dark));
+            padding: 1rem;
+            color: white;
+            font-weight: 600;
             display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Loading Spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--jungle-dark);
-            border-top-color: var(--accent-green);
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-body { padding: 1.5rem; }
+
+        .modal-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--cream-dark);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .error-display {
+            background: linear-gradient(135deg, #ffcdd2, #ef9a9a);
+            border: 2px solid var(--danger);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .error-display.visible { display: block; }
+        .error-code { font-weight: 700; color: var(--danger); margin-bottom: 0.25rem; }
+        .error-detail { color: #666; font-size: 0.9rem; }
+
+        .onboarding-card {
+            background: linear-gradient(135deg, var(--banana-light), var(--banana));
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 20px rgba(255,216,77,0.3);
+        }
+
+        .onboarding-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--jungle);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .onboarding-steps { display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .onboarding-step { display: flex; align-items: center; gap: 0.75rem; color: var(--jungle); }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            background: var(--jungle);
+            color: var(--banana);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .onboarding-dismiss {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--bark);
         }
 
         .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
         }
 
-        .loading-overlay.visible {
-            display: flex;
+        .loading-overlay.visible { opacity: 1; visibility: visible; }
+
+        .loading-content { text-align: center; color: white; }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--cream-dark);
+            border-top-color: var(--banana);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        /* Comparison Mode */
-        .comparison-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .comparison-modal .modal { max-width: 900px; }
+
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .comparison-item { text-align: center; }
+
+        .comparison-item img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 2px solid var(--cream-dark);
         }
 
-        .comparison-panel {
-            position: relative;
-        }
+        .comparison-label { margin-top: 0.5rem; font-weight: 600; color: var(--bark); }
 
-        .comparison-label {
-            position: absolute;
-            top: 0.5rem;
-            left: 0.5rem;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-        }
+        .comparison-hash { font-family: monospace; font-size: 0.75rem; color: #888; }
 
-        /* Responsive */
+        /* Hidden elements for compatibility */
+        .hidden { display: none !important; }
+        .hash-display.advanced { display: none; }
+
         @media (max-width: 1200px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
+            .main-container { grid-template-columns: 1fr; }
+            .main-container > .panel { order: 1; }
+            .main-container > .canvas-container { order: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 1rem; }
+            .header h1 { font-size: 1.1rem; }
+            .effect-grid { grid-template-columns: 1fr; }
+            .frame-controls { flex-direction: column; }
+            .frame-slider { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
-        <h1>🌿 The Deterministic Jungle Canopy 🌿</h1>
-        <div class="status-bar">
-            <div class="status-indicator">
-                <div id="connectionDot" class="status-dot"></div>
-                <span id="connectionStatus">Disconnected</span>
+        <div class="header-left">
+            <span class="logo">🌿</span>
+            <div>
+                <h1>🌴 Deterministic Jungle Canopy</h1>
+                <div class="canopy-name" id="canopyName">Canopy 1</div>
             </div>
-            <div class="status-indicator">
-                <span>v0.3.0-alpha</span>
+        </div>
+        <div class="header-right">
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot" id="connectionDot"></span>
+                    <span id="connectionStatus">Offline</span>
+                </div>
+                <span id="savedStatus" style="font-size: 0.8rem; color: var(--cream);">Unsaved</span>
             </div>
+            <button class="btn btn-secondary btn-sm" id="saveSessionBtn" title="Save Jungle">📦 Save</button>
+            <button class="btn btn-outline btn-sm" id="advancedToggleBtn">🧭 Advanced</button>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-container">
-        <!-- Left Column - Controls -->
-        <div class="left-column">
-            <!-- Session Creation -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span>🎛️ Session Control</span>
-                </div>
-                <div class="panel-content">
-                    <div class="control-group">
-                        <label class="control-label">Seed</label>
-                        <input type="number" id="seedInput" value="42" min="0" max="999999999">
-                    </div>
-
-                    <div class="control-group">
-                        <label class="control-label">Preset</label>
-                        <select id="presetSelect">
-                            <option value="">None</option>
-                            <option value="solaris_dream">Solaris Dream</option>
-                            <option value="glitch_cathedral">Glitch Cathedral</option>
-                            <option value="tropical_night">Tropical Night</option>
-                            <option value="vhs_prophecy">VHS Prophecy</option>
-                            <option value="sacred_geometry">Sacred Geometry</option>
-                            <option value="chaos_realm">Chaos Realm</option>
-                            <option value="serenity">Serenity</option>
-                            <option value="neon_jungle" selected>Neon Jungle</option>
-                            <option value="ancient_scroll">Ancient Scroll</option>
-                            <option value="prismatic">Prismatic</option>
-                        </select>
-                    </div>
-
-                    <button id="createSessionBtn" class="btn btn-primary" style="width: 100%;">
-                        🌱 Create Session
-                    </button>
-
-                    <div style="margin-top: 1rem;">
-                        <div class="control-group">
-                            <label class="control-label">Session ID</label>
-                            <input type="text" id="sessionIdInput" readonly placeholder="Auto-generated">
+        <aside class="panel">
+            <div class="panel-header">
+                <span>🌿 Canopies</span>
+                <button class="btn btn-sm btn-primary" id="newSessionBtn" title="New Canopy">🌱</button>
+            </div>
+            <div class="panel-content">
+                <div id="onboardingCard" class="onboarding-card">
+                    <div class="onboarding-title">🍌 Welcome to the Jungle</div>
+                    <div class="onboarding-steps">
+                        <div class="onboarding-step">
+                            <span class="step-number">1</span>
+                            <span>Pick a preset on the right</span>
+                        </div>
+                        <div class="onboarding-step">
+                            <span class="step-number">2</span>
+                            <span>Choose a seed number</span>
+                        </div>
+                        <div class="onboarding-step">
+                            <span class="step-number">3</span>
+                            <span>Press "Grow Jungle"</span>
                         </div>
                     </div>
+                    <label class="onboarding-dismiss">
+                        <input type="checkbox" id="hideOnboarding"> Hide this next time
+                    </label>
+                </div>
+
+                <div class="session-list" id="sessionList"></div>
+
+                <div class="left-actions">
+                    <button class="btn btn-secondary" id="loadSessionBtn">🗂️ Load Jungle</button>
+                    <button class="btn btn-outline" id="archiveBtn">📦 Archive</button>
                 </div>
             </div>
+        </aside>
 
-            <!-- Effect Controls -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>✨ Effects</span>
-                    <span id="effectCount">0</span>
-                </div>
-                <div class="panel-content">
-                    <div class="effect-stack" id="effectStack">
-                        <!-- Effects will be populated here -->
-                    </div>
-
-                    <div class="control-group" style="margin-top: 1rem;">
-                        <label class="control-label">Add Effect</label>
-                        <select id="addEffectSelect">
-                            <option value="">Select effect...</option>
-                            <option value="bloom">Bloom</option>
-                            <option value="vignette">Vignette</option>
-                            <option value="color_shift">Color Shift</option>
-                            <option value="film_grain">Film Grain</option>
-                            <option value="glitch">Glitch</option>
-                            <option value="scanline">Scanline</option>
-                            <option value="chromatic_aberration">Chromatic Aberration</option>
-                            <option value="noise">Noise</option>
-                        </select>
-                        <button id="addEffectBtn" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;" disabled>
-                            Add Effect
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Grid Deformation -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>🌀 Grid Deformation</span>
-                </div>
-                <div class="panel-content">
-                    <div class="control-group">
-                        <label class="control-label">Deformation Type</label>
-                        <select id="gridDeformSelect">
-                            <option value="">None</option>
-                            <option value="turbulence">Turbulence</option>
-                            <option value="wave">Wave</option>
-                            <option value="kaleidoscope">Kaleidoscope</option>
-                        </select>
-                    </div>
-
-                    <div class="control-group">
-                        <label class="control-label">Intensity</label>
-                        <input type="range" id="gridIntensitySlider" min="0" max="100" value="50">
-                        <div class="slider-value">
-                            <span id="gridIntensityValue">50</span>% 
-                            <span id="transientGrid" class="transient-indicator">(preview)</span>
-                        </div>
-                    </div>
-
-                    <button id="applyGridBtn" class="btn btn-secondary" style="width: 100%;" disabled>
-                        Apply Grid Deformation
-                    </button>
-                </div>
-            </div>
-
-            <!-- Rewind & Fork -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>⏪⏩ Timeline</span>
-                </div>
-                <div class="panel-content">
-                    <div class="btn-group">
-                        <button id="rewindBtn" class="btn btn-secondary" disabled>
-                            ⏪ Rewind to Event
-                        </button>
-                        <input type="number" id="rewindEventInput" min="0" value="0" style="width: 80px;">
-                    </div>
-
-                    <div class="btn-group" style="margin-top: 0.5rem;">
-                        <button id="forkBtn" class="btn btn-secondary" disabled>
-                            🍴 Fork at Event
-                        </button>
-                        <input type="number" id="forkEventInput" min="0" value="0" style="width: 80px;">
-                    </div>
-
-                    <div class="btn-group" style="margin-top: 1rem;">
-                        <button id="renderFrameBtn" class="btn btn-primary" disabled>
-                            🎨 Render Frame
-                        </button>
-                    </div>
-
-                    <div style="margin-top: 1rem;">
-                        <label class="control-label">Frame Index</label>
-                        <input type="number" id="frameIndexInput" min="0" value="0">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Center Column - Canvas & Timeline -->
-        <div class="center-column canvas-container">
-            <div class="panel canvas-panel">
-                <div class="panel-header">
-                    <span>🖼️ Live Canvas</span>
-                    <span id="pixelHashDisplay" class="hash-display">No frame rendered</span>
+        <div class="canvas-container">
+            <div class="canvas-panel">
+                <div class="canvas-header">
+                    <span>🎞️ Live Preview</span>
+                    <span id="frameLabel">Frame 0</span>
                 </div>
                 <div class="canvas-wrapper">
-                    <img id="liveCanvas" src="" alt="Live canvas preview">
-                    <div class="loading-overlay" id="loadingOverlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <div class="canvas-overlay">
-                        <div class="hash-display">
-                            <div><span class="label">Manifest:</span> <span id="manifestHashDisplay" class="value">-</span></div>
-                            <div><span class="label">Events:</span> <span id="eventLogHashDisplay" class="value">-</span></div>
-                        </div>
+                    <canvas id="liveCanvas" width="512" height="512"></canvas>
+                    <div class="canvas-placeholder" id="canvasPlaceholder">
+                        <div class="icon">🌱</div>
+                        <div>Press "Grow Jungle" to see the magic!</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Timeline -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span>📜 Event Timeline</span>
+            <div class="frame-controls">
+                <div class="frame-nav">
+                    <button class="btn btn-secondary btn-sm" id="prevFrameBtn" title="Previous Frame">◀</button>
+                    <button class="btn btn-secondary btn-sm" id="playPauseBtn" title="Play/Pause">▶</button>
+                    <button class="btn btn-secondary btn-sm" id="nextFrameBtn" title="Next Frame">▶</button>
+                </div>
+                <input type="range" class="frame-slider" id="frameSlider" min="0" max="100" value="0">
+                <div class="frame-display">Frame: <span id="frameNumber">0</span></div>
+                <button class="btn btn-outline btn-sm" id="comparisonBtn">🔍 Compare</button>
+            </div>
+
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <span class="timeline-title">🪵 Jungle History</span>
                     <span id="eventCount">0 events</span>
                 </div>
-                <div class="panel-content">
-                    <div class="timeline-container">
-                        <div class="timeline-events" id="timelineEvents">
-                            <!-- Timeline events will be populated here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Error Display -->
-            <div id="errorDisplay" class="error-display">
-                <div class="error-code" id="errorCode"></div>
-                <div class="error-detail" id="errorDetail"></div>
+                <div class="timeline-events" id="timelineEvents"></div>
             </div>
         </div>
 
-        <!-- Right Column - Session Info & Archive -->
-        <div class="right-column">
-            <!-- Session Info -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span>📊 Session Info</span>
+        <aside class="panel quick-canopy">
+            <div class="panel-header"><span>🍌 Quick Canopy</span></div>
+            <div class="panel-content">
+                <div class="error-display" id="errorDisplay">
+                    <div class="error-code" id="errorCode">ERROR</div>
+                    <div class="error-detail" id="errorDetail">Something went wrong</div>
                 </div>
-                <div class="panel-content">
-                    <div class="session-info">
-                        <div class="info-row">
-                            <span class="info-label">Session ID</span>
-                            <span class="info-value" id="infoSessionId">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Status</span>
-                            <span class="info-value" id="infoStatus">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Events</span>
-                            <span class="info-value" id="infoEvents">0</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Current Frame</span>
-                            <span class="info-value" id="infoFrame">0</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Parent</span>
-                            <span class="info-value" id="infoParent">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Fork Point</span>
-                            <span class="info-value" id="infoForkPoint">-</span>
-                        </div>
-                    </div>
 
-                    <!-- Fork Tree -->
-                    <div class="fork-tree" id="forkTree">
-                        <!-- Fork tree will be populated here -->
+                <div class="control-group">
+                    <label class="control-label">🎨 Preset</label>
+                    <select id="presetSelect">
+                        <option value="neon_jungle">Neon Banana Grove</option>
+                        <option value="deep_forest">Deep Green Dream</option>
+                        <option value="glitch_canopy">Broken Vine Signal</option>
+                        <option value="golden_hour">Golden Banana Hour</option>
+                        <option value="void_bloom">Midnight Jungle Bloom</option>
+                    </select>
+                    <div class="control-hint">Choose your jungle style</div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">🌱 Seed — changes the jungle pattern</label>
+                    <div class="seed-input-group">
+                        <input type="number" id="seedInput" value="42" min="0" max="999999999">
+                        <button class="btn btn-outline btn-sm" id="randomSeedBtn" title="Random Seed">🎲</button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Export/Import -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>💾 Export/Import</span>
-                </div>
-                <div class="panel-content">
-                    <div class="btn-group" style="flex-direction: column;">
-                        <button id="exportBtn" class="btn btn-secondary" disabled>
-                            📤 Export Session
-                        </button>
-                        <button id="importBtn" class="btn btn-secondary">
-                            📥 Import Session
-                        </button>
-                        <button id="archiveSessionBtn" class="btn btn-secondary" disabled>
-                            🗄️ Archive Session
-                        </button>
+                <div class="control-group">
+                    <label class="control-label">🧪 Effects</label>
+                    <div class="effect-grid" id="effectGrid">
+                        <div class="effect-card" data-effect="glow">
+                            <div class="effect-header">
+                                <span class="effect-name">✨ Glow</span>
+                                <div class="effect-toggle" data-effect="glow"></div>
+                            </div>
+                            <div class="effect-hint">Adds a soft shine</div>
+                        </div>
+                        <div class="effect-card" data-effect="glitch">
+                            <div class="effect-header">
+                                <span class="effect-name">⚡ Glitch</span>
+                                <div class="effect-toggle" data-effect="glitch"></div>
+                            </div>
+                            <div class="effect-hint">Digital vine breaks</div>
+                        </div>
+                        <div class="effect-card" data-effect="ripple">
+                            <div class="effect-header">
+                                <span class="effect-name">🌊 Ripple</span>
+                                <div class="effect-toggle" data-effect="ripple"></div>
+                            </div>
+                            <div class="effect-hint">Water-like waves</div>
+                        </div>
+                        <div class="effect-card" data-effect="grain">
+                            <div class="effect-header">
+                                <span class="effect-name">🎞️ Grain</span>
+                                <div class="effect-toggle" data-effect="grain"></div>
+                            </div>
+                            <div class="effect-hint">Film-like texture</div>
+                        </div>
+                        <div class="effect-card" data-effect="color_shift">
+                            <div class="effect-header">
+                                <span class="effect-name">🎨 Color Shift</span>
+                                <div class="effect-toggle" data-effect="color_shift"></div>
+                            </div>
+                            <div class="effect-hint">Hue rotation</div>
+                        </div>
+                        <div class="effect-card" data-effect="mirror">
+                            <div class="effect-header">
+                                <span class="effect-name">🪞</span>
+                                <div class="effect-toggle" data-effect="mirror"></div>
+                            </div>
+                            <div class="effect-hint">Mirror reflection</div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Archive Browser -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>📚 Archive Browser</span>
-                    <button id="refreshArchiveBtn" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
-                        ↻
+                <div class="advanced-panel">
+                    <div class="advanced-toggle" id="advancedEffectsToggle">
+                        <span class="icon">▶</span>
+                        <span>Advanced Effect Settings</span>
+                    </div>
+                    <div class="advanced-content" id="advancedEffectsContent">
+                        <div id="effectSliders"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" id="growJungleBtn" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                        🍌 Grow Jungle
                     </button>
                 </div>
-                <div class="panel-content">
-                    <div class="archive-list" id="archiveList">
-                        <!-- Archive items will be populated here -->
-                    </div>
-                </div>
             </div>
-
-            <!-- Comparison Mode -->
-            <div class="panel" style="margin-top: 1rem;">
-                <div class="panel-header">
-                    <span>⚖️ Comparison Mode</span>
-                </div>
-                <div class="panel-content">
-                    <button id="toggleComparisonBtn" class="btn btn-secondary" style="width: 100%;">
-                        Enable Comparison
-                    </button>
-                </div>
-            </div>
-        </div>
+        </aside>
     </main>
 
-    <!-- Import Modal -->
-    <div id="importModal" class="modal-overlay">
+    <footer class="status-bar-bottom">
+        <div class="status-left">
+            <span class="status-item">📊 Frame: <span id="statusFrame">0</span></span>
+            <span class="status-item">🎨 Preset: <span id="statusPreset">neon_jungle</span></span>
+        </div>
+        <div class="status-right">
+            <span class="status-item" id="statusLastReceipt">Last receipt available</span>
+        </div>
+    </footer>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div>Growing your jungle...</div>
+        </div>
+    </div>
+
+    <div class="modal-overlay comparison-modal" id="comparisonModal">
         <div class="modal">
-            <h2>📥 Import Session</h2>
-            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
-                Paste the exported session JSON:
-            </p>
-            <textarea id="importTextarea" style="width: 100%; height: 200px; background: var(--jungle-dark); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); font-family: monospace; font-size: 0.8rem; padding: 0.5rem;"></textarea>
-            <div class="modal-actions">
-                <button id="confirmImportBtn" class="btn btn-primary">Import</button>
-                <button id="cancelImportBtn" class="btn btn-secondary">Cancel</button>
+            <div class="modal-header">
+                <span>🔍 Compare Jungles</span>
+                <button class="modal-close" id="closeComparisonModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="comparison-grid">
+                    <div class="comparison-item">
+                        <img id="comparisonOriginal" src="" alt="Original">
+                        <div class="comparison-label">Original</div>
+                        <div class="comparison-hash" id="comparisonHash1"></div>
+                    </div>
+                    <div class="comparison-item">
+                        <img id="comparisonCurrent" src="" alt="Current">
+                        <div class="comparison-label">Current</div>
+                        <div class="comparison-hash" id="comparisonHash2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeComparisonBtn">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- Comparison Modal -->
-    <div id="comparisonModal" class="modal-overlay">
-        <div class="modal" style="max-width: 800px;">
-            <h2>⚖️ Deterministic Comparison</h2>
-            <div class="comparison-container">
-                <div class="comparison-panel">
-                    <span class="comparison-label">Original</span>
-                    <img id="comparisonOriginal" style="width: 100%; background: #000;">
-                    <div class="hash-display" style="padding: 0.5rem;">
-                        <div><span class="label">Hash:</span> <span id="comparisonHash1" class="value">-</span></div>
-                    </div>
-                </div>
-                <div class="comparison-panel">
-                    <span class="comparison-label">Comparison</span>
-                    <img id="comparisonNew" style="width: 100%; background: #000;">
-                    <div class="hash-display" style="padding: 0.5rem;">
-                        <div><span class="label">Hash:</span> <span id="comparisonHash2" class="value">-</span></div>
-                    </div>
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>🗂️ Load Jungle</span>
+                <button class="modal-close" id="closeImportModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="control-group">
+                    <label class="control-label">Paste your jungle file content:</label>
+                    <textarea id="importContent" rows="8" style="width: 100%; padding: 0.75rem; border: 2px solid var(--cream-dark); border-radius: 8px; font-family: inherit;"></textarea>
                 </div>
             </div>
-            <div id="comparisonResult" style="margin-top: 1rem; text-align: center; font-weight: bold;"></div>
-            <div class="modal-actions">
-                <button id="closeComparisonBtn" class="btn btn-secondary">Close</button>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelImportBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmImportBtn">Load</button>
             </div>
         </div>
+    </div>
+
+    <!-- Hidden elements for API compatibility -->
+    <input type="hidden" id="sessionIdInput" value="">
+    <div id="infoPanel" class="advanced hash-display" style="display:none;">
+        <div class="hash-label">Session ID:</div>
+        <div id="infoSessionId"></div>
+        <div class="hash-label">Status:</div>
+        <div id="infoStatus"></div>
     </div>
 
     <script>
-        // ============================================
-        // Control Room JavaScript
-        // Deterministic Jungle Canopy - Browser Interface
-        // ============================================
-
-        class ControlRoom {
+        class BananaJungleControlRoom {
             constructor() {
                 this.apiBase = window.location.origin;
-                this.wsBase = `ws://${window.location.host}/ws/live`;
-                
                 this.session = null;
-                this.ws = null;
-                this.sessionManager = new SessionManager(this);
-                this.archiveManager = new ArchiveManager(this);
-                
-                this.isComparisonMode = false;
-                this.comparisonOriginal = null;
-                
-                // Transient state (not committed to server)
-                this.transientEffects = {};
-                this.transientGridIntensity = null;
-                
+                this.effects = {};
+                this.isPlaying = false;
+                this.canopyCounter = 1;
+                this.advancedMode = false;
+
+                this.friendlyErrorMessages = {
+                    'SESSION_CONFLICT': 'This jungle changed somewhere else. Refresh it before saving.',
+                    'WEBSOCKET_BACKPRESSURE': 'The jungle is moving too fast. Some preview frames were skipped.',
+                    'INVALID_MANIFEST': 'These jungle settings are incomplete or invalid.',
+                    'IMPORT_TOO_LARGE': 'That jungle file is too large to open safely.',
+                    'SESSION_NOT_FOUND': 'This jungle could not be found. It may have been deleted.',
+                    'CONNECTION_FAILED': 'Could not connect to the jungle server. Is it running?',
+                    'RENDER_FAILED': 'The jungle could not be grown. Try a different seed or preset.'
+                };
+
                 this.init();
             }
 
-            init() {
+            async init() {
                 this.bindEvents();
-                this.sessionManager.init();
-                this.archiveManager.init();
-                this.initEffectStack();
+                this.loadOnboardingPreference();
+                await this.createSession();
             }
 
             bindEvents() {
-                // Session controls
-                document.getElementById('createSessionBtn').onclick = () => this.createSession();
-                document.getElementById('addEffectBtn').onclick = () => this.addEffect();
-                document.getElementById('applyGridBtn').onclick = () => this.applyGridDeformation();
-                
-                // Timeline controls
-                document.getElementById('rewindBtn').onclick = () => this.rewindSession();
-                document.getElementById('forkBtn').onclick = () => this.forkSession();
-                document.getElementById('renderFrameBtn').onclick = () => this.renderCurrentFrame();
-                
-                // Export/Import
-                document.getElementById('exportBtn').onclick = () => this.exportSession();
-                document.getElementById('importBtn').onclick = () => this.showImportModal();
-                document.getElementById('archiveSessionBtn').onclick = () => this.archiveSession();
-                
-                // Archive
-                document.getElementById('refreshArchiveBtn').onclick = () => this.archiveManager.refresh();
-                
-                // Comparison mode
-                document.getElementById('toggleComparisonBtn').onclick = () => this.toggleComparisonMode();
-                
-                // Modals
-                document.getElementById('confirmImportBtn').onclick = () => this.importSession();
-                document.getElementById('cancelImportBtn').onclick = () => this.hideImportModal();
+                document.getElementById('newSessionBtn').onclick = () => this.createSession();
+                document.getElementById('saveSessionBtn').onclick = () => this.exportSession();
+                document.getElementById('loadSessionBtn').onclick = () => this.showImportModal();
+                document.getElementById('archiveBtn').onclick = () => this.archiveSession();
+
+                document.getElementById('presetSelect').onchange = (e) => {
+                    document.getElementById('statusPreset').textContent = e.target.value;
+                };
+
+                document.getElementById('randomSeedBtn').onclick = () => {
+                    document.getElementById('seedInput').value = Math.floor(Math.random() * 999999999);
+                };
+
+                document.getElementById('growJungleBtn').onclick = () => this.renderFrame();
+
+                document.getElementById('prevFrameBtn').onclick = () => this.prevFrame();
+                document.getElementById('nextFrameBtn').onclick = () => this.nextFrame();
+                document.getElementById('playPauseBtn').onclick = () => this.togglePlay();
+                document.getElementById('frameSlider').oninput = (e) => this.jumpToFrame(parseInt(e.target.value));
+                document.getElementById('frameSlider').onchange = (e) => this.jumpToFrame(parseInt(e.target.value));
+
+                document.querySelectorAll('.effect-toggle').forEach(toggle => {
+                    toggle.onclick = () => this.toggleEffect(toggle.dataset.effect);
+                });
+
+                document.getElementById('advancedEffectsToggle').onclick = () => {
+                    document.getElementById('advancedEffectsToggle').classList.toggle('open');
+                    document.getElementById('advancedEffectsContent').classList.toggle('visible');
+                };
+
+                document.getElementById('advancedToggleBtn').onclick = () => {
+                    this.advancedMode = !this.advancedMode;
+                    document.getElementById('advancedToggleBtn').classList.toggle('btn-secondary');
+                    document.getElementById('advancedToggleBtn').classList.toggle('btn-primary');
+                    this.updateAdvancedVisibility();
+                };
+
+                document.getElementById('hideOnboarding').onchange = (e) => {
+                    localStorage.setItem('hideOnboarding', e.target.checked);
+                    if (e.target.checked) {
+                        document.getElementById('onboardingCard').style.display = 'none';
+                    }
+                };
+
+                document.getElementById('comparisonBtn').onclick = () => this.showComparisonModal();
+                document.getElementById('closeComparisonModal').onclick = () => this.hideComparisonModal();
                 document.getElementById('closeComparisonBtn').onclick = () => this.hideComparisonModal();
-                
-                // Slider preview (transient)
-                document.getElementById('gridIntensitySlider').oninput = (e) => {
-                    document.getElementById('gridIntensityValue').textContent = e.target.value;
-                    document.getElementById('transientGrid').classList.add('visible');
-                    this.transientGridIntensity = parseInt(e.target.value);
+
+                document.getElementById('closeImportModal').onclick = () => this.hideImportModal();
+                document.getElementById('cancelImportBtn').onclick = () => this.hideImportModal();
+                document.getElementById('confirmImportBtn').onclick = () => this.importSession();
+
+                document.onkeydown = (e) => {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                    if (e.code === 'Space') { e.preventDefault(); this.togglePlay(); }
+                    if (e.code === 'ArrowLeft') this.prevFrame();
+                    if (e.code === 'ArrowRight') this.nextFrame();
+                    if (e.code === 'KeyR') this.renderFrame();
                 };
-                
-                document.getElementById('gridIntensitySlider').onchange = () => {
-                    document.getElementById('transientGrid').classList.remove('visible');
-                    this.transientGridIntensity = null;
-                };
+            }
+
+            loadOnboardingPreference() {
+                if (localStorage.getItem('hideOnboarding') === 'true') {
+                    document.getElementById('onboardingCard').style.display = 'none';
+                    document.getElementById('hideOnboarding').checked = true;
+                }
+            }
+
+            updateAdvancedVisibility() {
+                document.querySelectorAll('.hash-display.advanced').forEach(el => {
+                    el.style.display = this.advancedMode ? 'block' : 'none';
+                });
             }
 
             async createSession() {
-                const seed = parseInt(document.getElementById('seedInput').value);
-                const preset = document.getElementById('presetSelect').value;
-                
                 this.showLoading();
-                
                 try {
-                    const response = await fetch(`${this.apiBase}/api/session`, {
+                    const response = await fetch(`${this.apiBase}/api/session`, { 
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            seed: seed, 
-                            preset_name: preset || null,
-                            width: 256,
-                            height: 256
-                        })
+                        body: '{}'
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
+                    if (!response.ok) throw new Error('Failed to create session');
+
                     const data = await response.json();
                     this.session = data;
-                    
-                    // Update UI
+                    this.canopyCounter++;
+
+                    document.getElementById('canopyName').textContent = `Canopy ${this.canopyCounter}`;
                     document.getElementById('sessionIdInput').value = data.session_id;
                     document.getElementById('infoSessionId').textContent = data.session_id.substring(0, 8) + '...';
-                    document.getElementById('infoStatus').textContent = data.status;
-                    
-                    // Enable controls
+                    document.getElementById('infoStatus').textContent = data.status || 'active';
+
+                    this.updateConnectionStatus(true);
                     this.enableControls(true);
-                    
-                    // Connect WebSocket
-                    await this.connectWebSocket(data.session_id);
-                    
-                    // Render initial frame
-                    await this.renderCurrentFrame();
-                    
-                    // Update timeline
-                    this.updateTimeline();
-                    
-                    this.hideError();
-                    
-                } catch (error) {
-                    this.showError('CREATE_SESSION', error.message);
-                } finally {
                     this.hideLoading();
-                }
-            }
-
-            async connectWebSocket(sessionId) {
-                return new Promise((resolve, reject) => {
-                    const wsUrl = `${this.wsBase}/${sessionId}`;
-                    console.log('Connecting to WebSocket:', wsUrl);
-                    
-                    this.ws = new WebSocket(wsUrl);
-                    
-                    this.ws.onopen = () => {
-                        console.log('WebSocket connected');
-                        this.updateConnectionStatus(true);
-                        resolve();
-                    };
-                    
-                    this.ws.onclose = (event) => {
-                        console.log('WebSocket closed:', event.code, event.reason);
-                        this.updateConnectionStatus(false);
-                    };
-                    
-                    this.ws.onerror = (error) => {
-                        console.error('WebSocket error:', error);
-                        this.showError('WEBSOCKET', 'Connection error');
-                        reject(error);
-                    };
-                    
-                    this.ws.onmessage = (event) => {
-                        this.handleWsMessage(JSON.parse(event.data));
-                    };
-                });
-            }
-
-            handleWsMessage(message) {
-                console.log('WS Message:', message.type, message);
-                
-                switch (message.type) {
-                    case 'frame':
-                        this.displayFrame(message);
-                        break;
-                        
-                    case 'event_applied':
-                        this.onEventApplied(message);
-                        break;
-                        
-                    case 'rewound':
-                        this.onRewound(message);
-                        break;
-                        
-                    case 'error':
-                        this.showError(message.code, message.detail);
-                        break;
-                }
-            }
-
-            displayFrame(message) {
-                const img = document.getElementById('liveCanvas');
-                img.src = `data:image/png;base64,${message.image_base64}`;
-                
-                document.getElementById('pixelHashDisplay').textContent = message.pixel_hash.substring(0, 16) + '...';
-                document.getElementById('manifestHashDisplay').textContent = message.manifest_hash.substring(0, 16) + '...';
-                document.getElementById('eventLogHashDisplay').textContent = message.event_log_hash.substring(0, 16) + '...';
-                
-                // Update session info
-                if (this.session) {
-                    this.session.current_frame = message.frame_index;
-                    document.getElementById('infoFrame').textContent = message.frame_index;
-                }
-            }
-
-            onEventApplied(message) {
-                console.log('Event applied:', message.event_index);
-                this.updateTimeline();
-                this.fetchSessionInfo();
-            }
-
-            onRewound(message) {
-                console.log('Rewound to:', message.event_index);
-                this.updateTimeline();
-                this.fetchSessionInfo();
-            }
-
-            async fetchSessionInfo() {
-                if (!this.session) return;
-                
-                try {
-                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        this.session = { ...this.session, ...data };
-                        
-                        document.getElementById('infoEvents').textContent = data.event_count;
-                        document.getElementById('infoFrame').textContent = data.current_frame;
-                        document.getElementById('infoParent').textContent = data.parent_session_id ? 
-                            data.parent_session_id.substring(0, 8) + '...' : '-';
-                        document.getElementById('infoForkPoint').textContent = data.fork_event_index ?? '-';
-                        
-                        this.updateTimeline();
-                    }
                 } catch (error) {
-                    console.error('Failed to fetch session info:', error);
+                    this.hideLoading();
+                    this.showError('CONNECTION', this.friendlyError(error));
                 }
             }
 
-            updateTimeline() {
-                if (!this.session) return;
-                
-                const container = document.getElementById('timelineEvents');
-                container.innerHTML = '';
-                
-                const events = this.session.events || [];
-                document.getElementById('eventCount').textContent = `${events.length} events`;
-                
-                events.forEach((event, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'timeline-event';
-                    if (index === events.length - 1) {
-                        div.classList.add('current');
-                    }
-                    div.textContent = index;
-                    div.title = `${event.event_type}: ${JSON.stringify(event.payload)}`;
-                    div.onclick = () => this.rewindToEvent(index);
-                    container.appendChild(div);
-                });
-            }
+            async renderFrame() {
+                if (!this.session) await this.createSession();
 
-            initEffectStack() {
-                const effects = [
-                    { name: 'bloom', params: { threshold: 0.8, intensity: 1.0 } },
-                    { name: 'vignette', params: { intensity: 0.5 } },
-                    { name: 'color_shift', params: { hue_shift: 0.1 } },
-                    { name: 'film_grain', params: { intensity: 0.3 } },
-                    { name: 'glitch', params: { intensity: 0.5 } },
-                    { name: 'scanline', params: { frequency: 2.0 } },
-                    { name: 'chromatic_aberration', params: { intensity: 0.5 } },
-                    { name: 'noise', params: { amount: 0.1 } },
-                ];
-                
-                this.effects = effects;
-                this.renderEffectStack();
-            }
-
-            renderEffectStack() {
-                const container = document.getElementById('effectStack');
-                container.innerHTML = '';
-                document.getElementById('effectCount').textContent = this.effects.length;
-                
-                this.effects.forEach((effect, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'effect-item';
-                    div.innerHTML = `
-                        <input type="checkbox" ${effect.enabled !== false ? 'checked' : ''} 
-                               onchange="controlRoom.toggleEffect(${index}, this.checked)">
-                        <span class="name">${effect.name}</span>
-                        <button onclick="controlRoom.removeEffect(${index})" style="background: none; border: none; color: var(--accent-red); cursor: pointer;">×</button>
-                    `;
-                    container.appendChild(div);
-                });
-            }
-
-            async addEffect() {
-                const effectName = document.getElementById('addEffectSelect').value;
-                if (!effectName || !this.session) return;
-                
-                this.wsSend({
-                    type: 'event',
-                    event: {
-                        event_type: 'set_effect',
-                        payload: { effect: effectName, params: {} }
-                    }
-                });
-                
-                document.getElementById('addEffectSelect').value = '';
-            }
-
-            toggleEffect(index, enabled) {
-                this.effects[index].enabled = enabled;
-            }
-
-            removeEffect(index) {
-                const effect = this.effects[index];
-                this.effects.splice(index, 1);
-                this.renderEffectStack();
-                
-                if (this.session && this.ws) {
-                    this.wsSend({
-                        type: 'event',
-                        event: {
-                            event_type: 'disable_effect',
-                            payload: { effect: effect.name }
-                        }
-                    });
-                }
-            }
-
-            async applyGridDeformation() {
-                const deformType = document.getElementById('gridDeformSelect').value;
-                const intensity = parseInt(document.getElementById('gridIntensitySlider').value);
-                
-                if (!deformType || !this.session) return;
-                
-                this.wsSend({
-                    type: 'event',
-                    event: {
-                        event_type: 'grid_deform',
-                        payload: { 
-                            type: deformType, 
-                            params: { intensity: intensity / 100 } 
-                        }
-                    }
-                });
-                
-                document.getElementById('gridDeformSelect').value = '';
-            }
-
-            async rewindSession() {
-                if (!this.session) return;
-                
-                const eventIndex = parseInt(document.getElementById('rewindEventInput').value);
-                
-                this.wsSend({
-                    type: 'rewind',
-                    event_index: eventIndex
-                });
-            }
-
-            rewindToEvent(index) {
-                document.getElementById('rewindEventInput').value = index;
-                this.rewindSession();
-            }
-
-            async forkSession() {
-                if (!this.session) return;
-                
-                const eventIndex = parseInt(document.getElementById('forkEventInput').value);
-                
+                this.showLoading();
                 try {
-                    this.showLoading();
-                    
-                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/fork`, {
+                    const seed = parseInt(document.getElementById('seedInput').value) || 42;
+                    const preset = document.getElementById('presetSelect').value;
+
+                    const event = {
+                        event_type: 'render',
+                        parameters: {
+                            seed: seed,
+                            preset: preset,
+                            frame_index: (this.session.current_frame || 0) + 1
+                        }
+                    };
+
+                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/event`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ event_index: eventIndex })
+                        body: JSON.stringify(event)
                     });
-                    
+
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Render failed');
                     }
-                    
+
                     const data = await response.json();
-                    
-                    // Update to the fork
-                    this.session.session_id = data.session_id;
-                    document.getElementById('sessionIdInput').value = data.session_id;
-                    
-                    // Reconnect WebSocket
-                    if (this.ws) {
-                        this.ws.close();
-                    }
-                    await this.connectWebSocket(data.session_id);
-                    
-                    // Update info
-                    document.getElementById('infoSessionId').textContent = data.session_id.substring(0, 8) + '...';
-                    document.getElementById('infoParent').textContent = data.parent_session_id.substring(0, 8) + '...';
-                    document.getElementById('infoForkPoint').textContent = data.fork_event_index;
-                    
-                    // Update fork tree
-                    this.updateForkTree();
-                    
-                    this.hideError();
-                    
-                } catch (error) {
-                    this.showError('FORK', error.message);
-                } finally {
+                    this.session.current_frame = data.frame_index;
+                    this.updateFrameDisplay(data.frame_index);
+                    await this.fetchFrame(data.frame_index);
                     this.hideLoading();
+                    this.hideError();
+                    document.getElementById('canvasPlaceholder').style.display = 'none';
+                } catch (error) {
+                    this.hideLoading();
+                    this.showError('RENDER', this.friendlyError(error));
                 }
             }
 
-            updateForkTree() {
-                // Simplified - would be more complex in production
-                const container = document.getElementById('forkTree');
-                container.innerHTML = `
-                    <div class="fork-item current">
-                        <div>Current Session</div>
-                        <div class="session-id">${this.session?.session_id?.substring(0, 8)}...</div>
-                    </div>
-                `;
-            }
-
-            async renderCurrentFrame() {
+            async fetchFrame(frameIndex) {
                 if (!this.session) return;
-                
-                const frameIndex = parseInt(document.getElementById('frameIndexInput').value);
-                
-                this.wsSend({
-                    type: 'render',
-                    frame_index: frameIndex
-                });
-                
-                // If comparison mode is on, also render for comparison
-                if (this.isComparisonMode && !this.comparisonOriginal) {
-                    this.comparisonOriginal = {
-                        pixel_hash: document.getElementById('pixelHashDisplay').textContent.replace('...', ''),
-                        image: document.getElementById('liveCanvas').src
+                try {
+                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/frame/${frameIndex}`);
+                    if (!response.ok) return;
+
+                    const data = await response.json();
+                    const canvas = document.getElementById('liveCanvas');
+                    const ctx = canvas.getContext('2d');
+
+                    const img = new Image();
+                    img.onload = () => {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
                     };
+                    img.src = data.image;
+                } catch (error) {
+                    console.error('Failed to fetch frame:', error);
                 }
             }
 
-            wsSend(message) {
-                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    this.ws.send(JSON.stringify(message));
+            updateFrameDisplay(frameIndex) {
+                document.getElementById('frameNumber').textContent = frameIndex;
+                document.getElementById('frameLabel').textContent = `Frame ${frameIndex}`;
+                document.getElementById('statusFrame').textContent = frameIndex;
+                document.getElementById('frameSlider').value = frameIndex;
+                document.getElementById('frameSlider').max = Math.max(frameIndex, 100);
+            }
+
+            jumpToFrame(frameIndex) {
+                if (!this.session) return;
+                this.fetchFrame(frameIndex);
+                this.updateFrameDisplay(frameIndex);
+            }
+
+            prevFrame() {
+                const current = parseInt(document.getElementById('frameNumber').textContent);
+                if (current > 0) this.jumpToFrame(current - 1);
+            }
+
+            nextFrame() {
+                const current = parseInt(document.getElementById('frameNumber').textContent);
+                this.jumpToFrame(current + 1);
+            }
+
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                document.getElementById('playPauseBtn').textContent = this.isPlaying ? '⏸' : '▶';
+                if (this.isPlaying) this.playFrames();
+            }
+
+            async playFrames() {
+                while (this.isPlaying) {
+                    await new Promise(r => setTimeout(r, 500));
+                    const current = parseInt(document.getElementById('frameNumber').textContent);
+                    this.jumpToFrame(current + 1);
+                }
+            }
+
+            toggleEffect(effectName) {
+                const toggle = document.querySelector(`.effect-toggle[data-effect="${effectName}"]`);
+                const card = document.querySelector(`.effect-card[data-effect="${effectName}"]`);
+
+                if (this.effects[effectName]) {
+                    this.effects[effectName] = false;
+                    toggle.classList.remove('active');
+                    card.classList.remove('active');
                 } else {
-                    console.warn('WebSocket not connected');
+                    this.effects[effectName] = true;
+                    toggle.classList.add('active');
+                    card.classList.add('active');
                 }
             }
 
             async exportSession() {
                 if (!this.session) return;
-                
                 try {
                     const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/export`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        const json = JSON.stringify(data, null, 2);
-                        
-                        // Create download
-                        const blob = new Blob([json], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `session_${this.session.session_id.substring(0, 8)}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                    }
+                    if (!response.ok) throw new Error('Export failed');
+
+                    const data = await response.json();
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `jungle-${this.session.session_id.substring(0, 8)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    document.getElementById('savedStatus').textContent = 'Saved';
                 } catch (error) {
-                    this.showError('EXPORT', error.message);
+                    this.showError('EXPORT', this.friendlyError(error));
                 }
             }
 
@@ -1367,85 +1229,43 @@
 
             hideImportModal() {
                 document.getElementById('importModal').classList.remove('visible');
-                document.getElementById('importTextarea').value = '';
+                document.getElementById('importContent').value = '';
             }
 
             async importSession() {
-                const json = document.getElementById('importTextarea').value.trim();
-                if (!json) return;
-                
                 try {
-                    const payload = JSON.parse(json);
-                    
+                    const content = document.getElementById('importContent').value;
+                    const data = JSON.parse(content);
+
                     const response = await fetch(`${this.apiBase}/api/session/import`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(data)
                     });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // Switch to imported session
-                    this.session = { session_id: data.session_id };
-                    document.getElementById('sessionIdInput').value = data.session_id;
-                    
-                    // Reconnect
-                    if (this.ws) this.ws.close();
-                    await this.connectWebSocket(data.session_id);
-                    await this.fetchSessionInfo();
-                    await this.renderCurrentFrame();
-                    
+
+                    if (!response.ok) throw new Error('Import failed');
+
+                    const imported = await response.json();
+                    this.session = imported;
+                    document.getElementById('sessionIdInput').value = imported.session_id;
                     this.hideImportModal();
                     this.hideError();
-                    
                 } catch (error) {
-                    this.showError('IMPORT', error.message);
+                    this.showError('IMPORT', this.friendlyError(error));
                 }
             }
 
             async archiveSession() {
                 if (!this.session) return;
-                
                 try {
-                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/archive`, {
-                        method: 'POST'
-                    });
-                    
-                    if (response.ok) {
-                        alert('Session archived successfully');
-                        this.archiveManager.refresh();
-                    }
+                    await fetch(`${this.apiBase}/api/session/${this.session.session_id}/archive`, { method: 'POST' });
+                    alert('Jungle archived successfully!');
                 } catch (error) {
-                    this.showError('ARCHIVE', error.message);
-                }
-            }
-
-            toggleComparisonMode() {
-                this.isComparisonMode = !this.isComparisonMode;
-                const btn = document.getElementById('toggleComparisonBtn');
-                
-                if (this.isComparisonMode) {
-                    btn.textContent = 'Disable Comparison';
-                    btn.classList.add('btn-primary');
-                    btn.classList.remove('btn-secondary');
-                    this.comparisonOriginal = null;
-                } else {
-                    btn.textContent = 'Enable Comparison';
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-secondary');
-                    this.hideComparisonModal();
+                    this.showError('ARCHIVE', this.friendlyError(error));
                 }
             }
 
             showComparisonModal() {
-                if (!this.comparisonOriginal) return;
-                
-                document.getElementById('comparisonOriginal').src = this.comparisonOriginal.image;
-                document.getElementById('comparisonHash1').textContent = this.comparisonOriginal.pixel_hash;
                 document.getElementById('comparisonModal').classList.add('visible');
             }
 
@@ -1456,34 +1276,26 @@
             updateConnectionStatus(connected) {
                 const dot = document.getElementById('connectionDot');
                 const status = document.getElementById('connectionStatus');
-                
                 if (connected) {
                     dot.classList.add('connected');
+                    dot.classList.remove('reconnecting');
                     status.textContent = 'Connected';
                 } else {
                     dot.classList.remove('connected');
-                    status.textContent = 'Disconnected';
+                    dot.classList.add('reconnecting');
+                    status.textContent = 'Reconnecting...';
                 }
             }
 
             enableControls(enabled) {
-                const controls = [
-                    'addEffectBtn', 'applyGridBtn', 'rewindBtn', 'forkBtn',
-                    'renderFrameBtn', 'exportBtn', 'archiveSessionBtn'
-                ];
-                
-                controls.forEach(id => {
-                    document.getElementById(id).disabled = !enabled;
+                ['growJungleBtn', 'prevFrameBtn', 'nextFrameBtn', 'saveSessionBtn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = !enabled;
                 });
             }
 
-            showLoading() {
-                document.getElementById('loadingOverlay').classList.add('visible');
-            }
-
-            hideLoading() {
-                document.getElementById('loadingOverlay').classList.remove('visible');
-            }
+            showLoading() { document.getElementById('loadingOverlay').classList.add('visible'); }
+            hideLoading() { document.getElementById('loadingOverlay').classList.remove('visible'); }
 
             showError(code, detail) {
                 const display = document.getElementById('errorDisplay');
@@ -1495,96 +1307,17 @@
             hideError() {
                 document.getElementById('errorDisplay').classList.remove('visible');
             }
-        }
 
-        // Session Manager
-        class SessionManager {
-            constructor(controlRoom) {
-                this.controlRoom = controlRoom;
-            }
-
-            init() {
-                // Check for session in URL
-                const params = new URLSearchParams(window.location.search);
-                const sessionId = params.get('session');
-                
-                if (sessionId) {
-                    this.resumeSession(sessionId);
+            friendlyError(error) {
+                const message = error.message || String(error);
+                for (const [code, friendly] of Object.entries(this.friendlyErrorMessages)) {
+                    if (message.includes(code)) return friendly;
                 }
-            }
-
-            async resumeSession(sessionId) {
-                try {
-                    const response = await fetch(`${this.controlRoom.apiBase}/api/session/${sessionId}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        this.controlRoom.session = data;
-                        
-                        document.getElementById('sessionIdInput').value = data.session_id;
-                        document.getElementById('infoSessionId').textContent = data.session_id.substring(0, 8) + '...';
-                        document.getElementById('infoStatus').textContent = data.status;
-                        
-                        this.controlRoom.enableControls(true);
-                        await this.controlRoom.connectWebSocket(data.session_id);
-                        await this.controlRoom.fetchSessionInfo();
-                        await this.controlRoom.renderCurrentFrame();
-                    }
-                } catch (error) {
-                    console.error('Failed to resume session:', error);
-                }
+                return message;
             }
         }
 
-        // Archive Manager
-        class ArchiveManager {
-            constructor(controlRoom) {
-                this.controlRoom = controlRoom;
-                this.sessions = [];
-            }
-
-            init() {
-                this.refresh();
-            }
-
-            async refresh() {
-                try {
-                    const response = await fetch(`${this.controlRoom.apiBase}/api/sessions/archive`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        this.sessions = data.results || [];
-                        this.render();
-                    }
-                } catch (error) {
-                    console.error('Failed to refresh archive:', error);
-                }
-            }
-
-            render() {
-                const container = document.getElementById('archiveList');
-                
-                if (this.sessions.length === 0) {
-                    container.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 1rem;">No archived sessions</div>';
-                    return;
-                }
-                
-                container.innerHTML = this.sessions.map(session => `
-                    <div class="archive-item" onclick="controlRoom.archiveManager.loadSession('${session.session_id}')">
-                        <div class="name">${session.session_id.substring(0, 8)}...</div>
-                        <div class="meta">
-                            Status: ${session.status} | 
-                            Created: ${new Date(session.created_at).toLocaleDateString()}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            async loadSession(sessionId) {
-                await this.controlRoom.sessionManager.resumeSession(sessionId);
-            }
-        }
-
-        // Initialize
-        const controlRoom = new ControlRoom();
+        const controlRoom = new BananaJungleControlRoom();
     </script>
 </body>
 </html>

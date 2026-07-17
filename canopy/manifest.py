@@ -46,7 +46,9 @@ class EffectConfig:
         }
     
     @classmethod
-    def from_dict(cls, data: dict) -> "EffectConfig":
+    def from_dict(cls, data) -> "EffectConfig":
+        if isinstance(data, str):
+            return cls(name=data)
         return cls(
             name=data["name"],
             enabled=data.get("enabled", True),

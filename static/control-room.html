@@ -1086,6 +1086,30 @@
                 }
             }
 
+            async sendEvent(sessionId, eventType, payload) {
+                const response = await fetch(`${this.apiBase}/api/session/${sessionId}/event`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event_type: eventType, payload: payload || {} })
+                });
+                if (!response.ok) {
+                    let detail = 'Event failed';
+                    try {
+                        const ct = response.headers.get('content-type') || '';
+                        if (ct.includes('application/json')) {
+                            const err = await response.json();
+                            detail = err.detail || JSON.stringify(err);
+                        } else {
+                            detail = await response.text().catch(() => 'HTTP ' + response.status);
+                        }
+                    } catch (_) {
+                        detail = 'HTTP ' + response.status;
+                    }
+                    throw new Error(eventType + ': ' + detail);
+                }
+                return await response.json();
+            }
+
             async renderFrame() {
                 if (!this.session) await this.createSession();
 
@@ -1093,31 +1117,18 @@
                 try {
                     const seed = parseInt(document.getElementById('seedInput').value) || 42;
                     const preset = document.getElementById('presetSelect').value;
+                    const sid = this.session.session_id;
 
-                    const event = {
-                        event_type: 'render',
-                        parameters: {
-                            seed: seed,
-                            preset: preset,
-                            frame_index: (this.session.current_frame || 0) + 1
-                        }
-                    };
+                    await this.sendEvent(sid, 'apply_preset', { preset_name: preset });
+                    await this.sendEvent(sid, 'set_seed', { seed: seed });
 
-                    const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/event`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(event)
-                    });
-
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Render failed');
+                    for (const [effect, enabled] of Object.entries(this.effects)) {
+                        await this.sendEvent(sid, enabled ? 'enable_effect' : 'disable_effect', { effect: effect });
                     }
 
-                    const data = await response.json();
-                    this.session.current_frame = data.frame_index;
-                    this.updateFrameDisplay(data.frame_index);
-                    await this.fetchFrame(data.frame_index);
+                    await this.fetchFrame(0);
+                    this.session.current_frame = 0;
+                    this.updateFrameDisplay(0);
                     this.hideLoading();
                     this.hideError();
                     document.getElementById('canvasPlaceholder').style.display = 'none';
@@ -1131,21 +1142,35 @@
                 if (!this.session) return;
                 try {
                     const response = await fetch(`${this.apiBase}/api/session/${this.session.session_id}/frame/${frameIndex}`);
-                    if (!response.ok) return;
-
+                    if (!response.ok) {
+                        const errText = await response.text().catch(() => 'HTTP ' + response.status);
+                        throw new Error('Frame fetch failed (' + response.status + '): ' + errText);
+                    }
+                    const ct = response.headers.get('content-type') || '';
+                    if (!ct.includes('application/json')) {
+                        const errText = await response.text().catch(() => '');
+                        throw new Error('Expected JSON, got ' + ct + ': ' + errText.substring(0, 200));
+                    }
                     const data = await response.json();
+                    if (!data.image_base64) {
+                        throw new Error('No image data in frame response');
+                    }
+                    const dataUri = 'data:image/png;base64,' + data.image_base64;
                     const canvas = document.getElementById('liveCanvas');
                     const ctx = canvas.getContext('2d');
-
                     const img = new Image();
                     img.onload = () => {
                         canvas.width = img.width;
                         canvas.height = img.height;
                         ctx.drawImage(img, 0, 0);
                     };
-                    img.src = data.image;
+                    img.onerror = () => {
+                        this.showError('FRAME', 'Failed to load rendered image');
+                    };
+                    img.src = dataUri;
                 } catch (error) {
                     console.error('Failed to fetch frame:', error);
+                    this.showError('FRAME', this.friendlyError(error));
                 }
             }
 

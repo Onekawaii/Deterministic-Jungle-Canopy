@@ -1,0 +1,475 @@
+name: Canopy effect and WebSocket recovery
+
+on:
+  push:
+    branches:
+      - fix/effect-events-websocket-recovery
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: ${{ !contains(github.event.head_commit.message, '[skip canopy repair]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/effect-events-websocket-recovery
+          fetch-depth: 0
+
+      - name: Apply surgical repair
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              if old not in text:
+                  raise SystemExit(f"Expected block not found in {path}: {old[:120]!r}")
+              p.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          session = Path("canopy/session.py")
+          text = session.read_text(encoding="utf-8")
+          text = text.replace(
+              "from .core.renderer import CanopyRenderer\n",
+              "from .core.renderer import CanopyRenderer\n\n\nBUILTIN_EFFECTS = frozenset({\n    \"chromatic_aberration\", \"glitch\", \"scanline\", \"vignette\",\n    \"bloom\", \"noise\", \"color_shift\", \"pixelate\", \"wave\",\n    \"kaleidoscope\", \"vhs\", \"duotone\", \"negative\",\n    \"posterize\", \"film_grain\",\n})\n"
+          )
+          text = text.replace(
+              "            # Apply event to current_manifest\n            new_manifest = self._apply_event_to_manifest(session.current_manifest, event)\n            session.current_manifest = new_manifest\n",
+              "            # Apply event to current_manifest. Invalid input must not mutate state.\n            try:\n                new_manifest = self._apply_event_to_manifest(session.current_manifest, event)\n            except (TypeError, ValueError) as exc:\n                return False, str(exc)\n            session.current_manifest = new_manifest\n"
+          )
+          marker = "    def _apply_event_to_manifest(self, manifest: dict, event: SessionEvent) -> dict:\n"
+          helper = '''    @staticmethod
+    def _normalize_effects(effects: Any) -> List[Dict[str, Any]]:
+        """Normalize legacy string effects and structured effects without duplicates."""
+        normalized: List[Dict[str, Any]] = []
+        positions: Dict[str, int] = {}
+        for raw in effects or []:
+            if isinstance(raw, EffectConfig):
+                item = {"name": raw.name, "params": dict(raw.params), "enabled": bool(raw.enabled)}
+            elif isinstance(raw, str):
+                item = {"name": raw, "params": {}, "enabled": True}
+            elif isinstance(raw, dict):
+                name = raw.get("name")
+                item = {
+                    "name": name,
+                    "params": dict(raw.get("params") or {}),
+                    "enabled": bool(raw.get("enabled", True)),
+                }
+            else:
+                raise TypeError("Effect entries must be strings, mappings, or EffectConfig objects")
+
+            name = item.get("name")
+            if not isinstance(name, str) or not name:
+                raise ValueError("Effect name must be a non-empty string")
+            if name not in BUILTIN_EFFECTS:
+                raise ValueError(f"Unknown effect: {name}")
+            if name in positions:
+                normalized[positions[name]] = item
+            else:
+                positions[name] = len(normalized)
+                normalized.append(item)
+        return normalized
+
+'''
+          if marker not in text:
+              raise SystemExit("session marker missing")
+          text = text.replace(marker, helper + marker, 1)
+          text = text.replace(
+              '                new_manifest["effects"] = preset.get("effects", [])\n',
+              '                new_manifest["effects"] = self._normalize_effects(preset.get("effects", []))\n'
+          )
+          old = '''        elif event_type == EventType.SET_EFFECT:
+            effect_name = payload.get("effect")
+            params = payload.get("params", {})
+            effects = new_manifest.get("effects", [])
+            # Find and update or add
+            found = False
+            for i, eff in enumerate(effects):
+                if eff.get("name") == effect_name:
+                    effects[i] = {"name": effect_name, "params": params, "enabled": True}
+                    found = True
+                    break
+            if not found:
+                effects.append({"name": effect_name, "params": params, "enabled": True})
+            new_manifest["effects"] = effects
+'''
+          new = '''        elif event_type == EventType.SET_EFFECT:
+            effect_name = payload.get("effect")
+            if not isinstance(effect_name, str) or not effect_name:
+                raise ValueError("Effect name must be a non-empty string")
+            if effect_name not in BUILTIN_EFFECTS:
+                raise ValueError(f"Unknown effect: {effect_name}")
+            params = payload.get("params", {})
+            if not isinstance(params, dict):
+                raise ValueError("Effect params must be an object")
+            enabled = bool(payload.get("enabled", True))
+            effects = self._normalize_effects(new_manifest.get("effects", []))
+            replacement = {"name": effect_name, "params": params, "enabled": enabled}
+            for index, effect in enumerate(effects):
+                if effect["name"] == effect_name:
+                    effects[index] = replacement
+                    break
+            else:
+                effects.append(replacement)
+            new_manifest["effects"] = effects
+'''
+          if old not in text:
+              raise SystemExit("SET_EFFECT block missing")
+          text = text.replace(old, new, 1)
+          old = '''        elif event_type == EventType.ENABLE_EFFECT:
+            effect_name = payload.get("effect")
+            effects = new_manifest.get("effects", [])
+            for eff in effects:
+                if eff.get("name") == effect_name:
+                    eff["enabled"] = True
+            new_manifest["effects"] = effects
+            
+        elif event_type == EventType.DISABLE_EFFECT:
+            effect_name = payload.get("effect")
+            effects = new_manifest.get("effects", [])
+            for eff in effects:
+                if eff.get("name") == effect_name:
+                    eff["enabled"] = False
+            new_manifest["effects"] = effects
+'''
+          new = '''        elif event_type in (EventType.ENABLE_EFFECT, EventType.DISABLE_EFFECT):
+            effect_name = payload.get("effect")
+            if not isinstance(effect_name, str) or not effect_name:
+                raise ValueError("Effect name must be a non-empty string")
+            if effect_name not in BUILTIN_EFFECTS:
+                raise ValueError(f"Unknown effect: {effect_name}")
+            enabled = event_type == EventType.ENABLE_EFFECT
+            effects = self._normalize_effects(new_manifest.get("effects", []))
+            for effect in effects:
+                if effect["name"] == effect_name:
+                    effect["enabled"] = enabled
+                    break
+            else:
+                effects.append({"name": effect_name, "params": {}, "enabled": enabled})
+            new_manifest["effects"] = effects
+'''
+          if old not in text:
+              raise SystemExit("legacy enable/disable block missing")
+          text = text.replace(old, new, 1)
+          session.write_text(text, encoding="utf-8")
+
+          server = Path("server.py")
+          text = server.read_text(encoding="utf-8")
+          old = '''    # Create event
+    event = SessionEvent(
+        event_index=len(session.events),
+        event_type=EventType(req.event_type),
+        payload=req.payload,
+    )
+'''
+          new = '''    # Create event. Unknown event types are client errors, not server failures.
+    try:
+        event_type = EventType(req.event_type)
+    except ValueError:
+        allowed = ", ".join(item.value for item in EventType)
+        raise HTTPException(422, f"Unknown event type '{req.event_type}'. Allowed: {allowed}")
+
+    event = SessionEvent(
+        event_index=len(session.events),
+        event_type=event_type,
+        payload=req.payload,
+    )
+'''
+          if old not in text:
+              raise SystemExit("server event creation block missing")
+          text = text.replace(old, new, 1)
+          text = text.replace(
+              '    if not success:\n        raise HTTPException(409, error or "Failed to apply event")\n',
+              '    if not success:\n        raise HTTPException(422, error or "Failed to apply event")\n',
+              1,
+          )
+          text = text.replace(
+              '    except Exception as e:\n        raise HTTPException(500, f"Rendering failed: {str(e)}")\n',
+              '    except ValueError as e:\n        raise HTTPException(422, f"Invalid render state: {str(e)}")\n    except Exception as e:\n        raise HTTPException(500, "Rendering failed safely")\n',
+              1,
+          )
+          server.write_text(text, encoding="utf-8")
+
+          ui = Path("static/control-room.html")
+          text = ui.read_text(encoding="utf-8")
+          text = text.replace(
+              "                this.advancedMode = false;\n",
+              "                this.advancedMode = false;\n                this.socket = null;\n                this.reconnectTimer = null;\n                this.reconnectAttempts = 0;\n                this.effectAliases = { glow: 'bloom', ripple: 'wave', grain: 'film_grain', mirror: 'kaleidoscope' };\n"
+          )
+          text = text.replace(
+              "                await this.createSession();\n",
+              "                const restored = await this.restoreSession();\n                if (!restored) await this.createSession();\n",
+              1,
+          )
+          text = text.replace(
+              "                     toggle.onclick = () => this.toggleEffect(toggle.dataset.effect);\n",
+              "                     toggle.onclick = () => this.toggleEffect(toggle.dataset.effect);\n"
+          )
+          text = text.replace(
+              "                    this.updateConnectionStatus(true);\n                    this.enableControls(true);\n",
+              "                    localStorage.setItem('canopySessionId', data.session_id);\n                    this.connectWebSocket();\n                    this.enableControls(true);\n",
+              1,
+          )
+          insert_before = "            async sendEvent(sessionId, eventType, payload) {\n"
+          methods = '''            async restoreSession() {
+                const sessionId = localStorage.getItem('canopySessionId');
+                if (!sessionId) return false;
+                try {
+                    const response = await fetch(`${this.apiBase}/api/session/${sessionId}`);
+                    if (!response.ok) {
+                        localStorage.removeItem('canopySessionId');
+                        return false;
+                    }
+                    this.session = await response.json();
+                    document.getElementById('sessionIdInput').value = sessionId;
+                    document.getElementById('infoSessionId').textContent = sessionId.substring(0, 8) + '...';
+                    document.getElementById('infoStatus').textContent = this.session.status || 'active';
+                    this.syncEffectsFromManifest(this.session.current_manifest || {});
+                    this.updateFrameDisplay(this.session.current_frame || 0);
+                    this.enableControls(true);
+                    this.connectWebSocket();
+                    return true;
+                } catch (_) {
+                    this.updateConnectionStatus('offline');
+                    return false;
+                }
+            }
+
+            syncEffectsFromManifest(manifest) {
+                const reverse = Object.fromEntries(Object.entries(this.effectAliases).map(([ui, api]) => [api, ui]));
+                this.effects = {};
+                for (const raw of (manifest.effects || [])) {
+                    const effect = typeof raw === 'string' ? { name: raw, enabled: true } : raw;
+                    const uiName = reverse[effect.name] || effect.name;
+                    this.effects[uiName] = effect.enabled !== false;
+                }
+                document.querySelectorAll('.effect-toggle').forEach(toggle => {
+                    const active = Boolean(this.effects[toggle.dataset.effect]);
+                    toggle.classList.toggle('active', active);
+                    const card = document.querySelector(`.effect-card[data-effect="${toggle.dataset.effect}"]`);
+                    if (card) card.classList.toggle('active', active);
+                });
+            }
+
+            connectWebSocket() {
+                if (!this.session || !this.session.session_id) return;
+                if (this.socket) {
+                    this.socket.onclose = null;
+                    this.socket.close();
+                }
+                clearTimeout(this.reconnectTimer);
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const url = `${protocol}//${window.location.host}/ws/live/${this.session.session_id}`;
+                this.updateConnectionStatus(this.reconnectAttempts ? 'reconnecting' : 'offline');
+                this.socket = new WebSocket(url);
+                this.socket.onopen = () => {
+                    this.reconnectAttempts = 0;
+                    this.updateConnectionStatus('connected');
+                };
+                this.socket.onmessage = event => {
+                    try {
+                        const message = JSON.parse(event.data);
+                        if (message.type === 'error') this.showError(message.code || 'SOCKET', message.detail || 'Live connection error');
+                    } catch (_) { /* malformed socket messages are ignored safely */ }
+                };
+                this.socket.onerror = () => this.updateConnectionStatus('reconnecting');
+                this.socket.onclose = () => this.scheduleReconnect();
+            }
+
+            scheduleReconnect() {
+                if (!this.session) return;
+                this.reconnectAttempts += 1;
+                const delay = Math.min(1000 * (2 ** Math.min(this.reconnectAttempts - 1, 4)), 15000);
+                this.updateConnectionStatus('reconnecting');
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = setTimeout(() => this.connectWebSocket(), delay);
+            }
+
+'''
+          if insert_before not in text:
+              raise SystemExit("UI sendEvent marker missing")
+          text = text.replace(insert_before, methods + insert_before, 1)
+          text = text.replace(
+              "                    for (const [effect, enabled] of Object.entries(this.effects)) {\n                        await this.sendEvent(sid, enabled ? 'enable_effect' : 'disable_effect', { effect: effect });\n                    }\n",
+              "                    for (const [effect, enabled] of Object.entries(this.effects)) {\n                        const canonical = this.effectAliases[effect] || effect;\n                        await this.sendEvent(sid, 'set_effect', { effect: canonical, params: {}, enabled });\n                    }\n"
+          )
+          old = '''            toggleEffect(effectName) {
+                const toggle = document.querySelector(`.effect-toggle[data-effect="${effectName}"]`);
+                const card = document.querySelector(`.effect-card[data-effect="${effectName}"]`);
+
+                if (this.effects[effectName]) {
+                    this.effects[effectName] = false;
+                    toggle.classList.remove('active');
+                    card.classList.remove('active');
+                } else {
+                    this.effects[effectName] = true;
+                    toggle.classList.add('active');
+                    card.classList.add('active');
+                }
+            }
+'''
+          new = '''            async toggleEffect(effectName) {
+                const toggle = document.querySelector(`.effect-toggle[data-effect="${effectName}"]`);
+                const card = document.querySelector(`.effect-card[data-effect="${effectName}"]`);
+                const enabled = !Boolean(this.effects[effectName]);
+                this.effects[effectName] = enabled;
+                toggle.classList.toggle('active', enabled);
+                card.classList.toggle('active', enabled);
+
+                if (!this.session) return;
+                try {
+                    const canonical = this.effectAliases[effectName] || effectName;
+                    const result = await this.sendEvent(this.session.session_id, 'set_effect', {
+                        effect: canonical,
+                        params: {},
+                        enabled,
+                    });
+                    this.session.current_manifest = result.current_manifest;
+                    await this.fetchFrame(parseInt(document.getElementById('frameNumber').textContent) || 0);
+                    this.hideError();
+                } catch (error) {
+                    this.effects[effectName] = !enabled;
+                    toggle.classList.toggle('active', !enabled);
+                    card.classList.toggle('active', !enabled);
+                    this.showError('EFFECT', 'This effect could not be applied. The jungle remains unchanged.');
+                    document.getElementById('errorDetail').title = error.message || String(error);
+                }
+            }
+'''
+          if old not in text:
+              raise SystemExit("UI toggleEffect block missing")
+          text = text.replace(old, new, 1)
+          old = '''            updateConnectionStatus(connected) {
+                const dot = document.getElementById('connectionDot');
+                const status = document.getElementById('connectionStatus');
+                if (connected) {
+                    dot.classList.add('connected');
+                    dot.classList.remove('reconnecting');
+                    status.textContent = 'Connected';
+                } else {
+                    dot.classList.remove('connected');
+                    dot.classList.add('reconnecting');
+                    status.textContent = 'Reconnecting...';
+                }
+            }
+'''
+          new = '''            updateConnectionStatus(state) {
+                const dot = document.getElementById('connectionDot');
+                const status = document.getElementById('connectionStatus');
+                const normalized = state === true ? 'connected' : (state === false ? 'offline' : state);
+                dot.classList.toggle('connected', normalized === 'connected');
+                dot.classList.toggle('reconnecting', normalized === 'reconnecting');
+                status.textContent = normalized === 'connected' ? 'Connected' :
+                    normalized === 'reconnecting' ? 'Reconnecting' : 'Offline';
+            }
+'''
+          if old not in text:
+              raise SystemExit("UI connection status block missing")
+          text = text.replace(old, new, 1)
+          ui.write_text(text, encoding="utf-8")
+
+          tests = Path("tests/test_effect_event_recovery.py")
+          tests.write_text('''import copy
+
+import pytest
+from fastapi.testclient import TestClient
+
+from canopy.manifest import ManifestBuilder
+from canopy.session import EventType, SessionEvent, SessionManager
+from server import app
+
+
+def apply(manager, session, event_type, payload):
+    event = SessionEvent(len(session.events), event_type, payload)
+    return manager.apply_event(session.session_id, event)
+
+
+def test_legacy_string_effect_can_be_enabled_without_crash():
+    manager = SessionManager()
+    session = manager.create_session(ManifestBuilder(seed=42).build())
+    session.current_manifest["effects"] = ["bloom"]
+    ok, error = apply(manager, session, EventType.ENABLE_EFFECT, {"effect": "bloom"})
+    assert ok, error
+    assert session.current_manifest["effects"] == [{"name": "bloom", "params": {}, "enabled": True}]
+
+
+def test_set_effect_is_idempotent_and_does_not_duplicate():
+    manager = SessionManager()
+    session = manager.create_session(ManifestBuilder(seed=42).build())
+    for _ in range(2):
+        ok, error = apply(manager, session, EventType.SET_EFFECT, {"effect": "glitch", "enabled": True, "params": {}})
+        assert ok, error
+    assert [e["name"] for e in session.current_manifest["effects"]].count("glitch") == 1
+
+
+def test_set_effect_can_disable_effect():
+    manager = SessionManager()
+    session = manager.create_session(ManifestBuilder(seed=42).build())
+    ok, error = apply(manager, session, EventType.SET_EFFECT, {"effect": "film_grain", "enabled": False})
+    assert ok, error
+    assert session.current_manifest["effects"][-1]["enabled"] is False
+
+
+def test_unknown_effect_is_rejected_without_mutation():
+    manager = SessionManager()
+    session = manager.create_session(ManifestBuilder(seed=42).build())
+    before = copy.deepcopy(session.current_manifest)
+    ok, error = apply(manager, session, EventType.SET_EFFECT, {"effect": "banana_explosion"})
+    assert not ok
+    assert "Unknown effect" in error
+    assert session.current_manifest == before
+    assert session.events == []
+
+
+def test_api_returns_422_for_unknown_event_type():
+    with TestClient(app) as client:
+        created = client.post("/api/session", json={}).json()
+        response = client.post(f"/api/session/{created['session_id']}/event", json={"event_type": "not_real", "payload": {}})
+        assert response.status_code == 422
+
+
+def test_api_returns_422_for_unknown_effect_not_500():
+    with TestClient(app) as client:
+        created = client.post("/api/session", json={}).json()
+        response = client.post(
+            f"/api/session/{created['session_id']}/event",
+            json={"event_type": "set_effect", "payload": {"effect": "not_real", "enabled": True}},
+        )
+        assert response.status_code == 422
+        assert "Unknown effect" in response.text
+
+
+def test_websocket_connect_does_not_mutate_event_history():
+    with TestClient(app) as client:
+        created = client.post("/api/session", json={}).json()
+        session_id = created["session_id"]
+        before = client.get(f"/api/session/{session_id}").json()
+        with client.websocket_connect(f"/ws/live/{session_id}"):
+            pass
+        after = client.get(f"/api/session/{session_id}").json()
+        assert after["event_count"] == before["event_count"]
+        assert after["manifest_hash"] == before["manifest_hash"]
+''', encoding="utf-8")
+          PY
+
+      - name: Install test dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Run focused recovery tests
+        run: pytest -q tests/test_effect_event_recovery.py
+
+      - name: Run full test suite
+        run: pytest -q
+
+      - name: Commit verified repair
+        shell: bash
+        run: |
+          git config user.name "canopy-repair-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add canopy/session.py server.py static/control-room.html tests/test_effect_event_recovery.py
+          git commit -m "Fix effect events and WebSocket recovery [skip canopy repair]"
+          git push origin HEAD:fix/effect-events-websocket-recovery

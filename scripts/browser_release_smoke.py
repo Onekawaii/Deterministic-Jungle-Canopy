@@ -215,6 +215,7 @@ def run(output_dir: Path) -> int:
             "browser": "chromium-headless",
             "canvas_rgb_sha256": canvas_hash1 if "canvas_hash1" in locals() else None,
             "api_pixel_hash": frame1.get("pixel_hash") if "frame1" in locals() else None,
+            "manifest_hash": frame1.get("manifest_hash") if "frame1" in locals() else None,
             "results": [asdict(c) for c in checks],
             "summary": {
                 "total_assertions": len(checks),

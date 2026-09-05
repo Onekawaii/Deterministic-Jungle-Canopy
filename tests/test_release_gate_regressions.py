@@ -84,3 +84,20 @@ def test_single_frame_export_is_png(client):
     response = client.get(f"/api/export/session/{sid}/frame/0")
     assert response.status_code == 200
     assert response.content.startswith(b"\x89PNG")
+
+
+def test_session_store_integrity_and_close(tmp_path):
+    from canopy.storage import SessionStore
+
+    db = tmp_path / "doctor.db"
+    store = SessionStore(str(db))
+    try:
+        result = store.check_integrity()
+        assert result["integrity_valid"] is True
+        assert result["issues"] == []
+    finally:
+        store.close()
+
+    # Windows must be able to remove the DB after close.
+    db.unlink()
+    assert not db.exists()

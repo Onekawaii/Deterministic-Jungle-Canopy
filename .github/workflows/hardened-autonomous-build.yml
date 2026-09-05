@@ -1,0 +1,54 @@
+name: Hardened Autonomous Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "baseline or hardened"
+        required: true
+        default: "hardened"
+        type: choice
+        options:
+          - hardened
+          - baseline
+      require_clean:
+        description: "Require a clean final git worktree"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  windows-hardened-build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run composite build
+        shell: pwsh
+        run: |
+          $args = @()
+          if ("${{ inputs.profile }}" -eq "baseline") { $args += "-Baseline" }
+          if ("${{ inputs.require_clean }}" -eq "true") { $args += "-RequireClean" }
+          .\RUN_HARDENED_AUTONOMOUS_BUILD.ps1 @args
+
+      - name: Upload receipts and release artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hardened-autonomous-build
+          path: |
+            receipts/hardened_autonomous_build/**
+            receipts/release_gate/**
+            dist/**
+          if-no-files-found: warn

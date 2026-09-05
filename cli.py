@@ -403,7 +403,7 @@ def main():
     
     # Server command
     server_parser = subparsers.add_parser("server", help="Start API server")
-    server_parser.add_argument("--host", default="0.0.0.0")
+    server_parser.add_argument("--host", default="127.0.0.1")
     server_parser.add_argument("--port", type=int, default=8000)
     server_parser.add_argument("--reload", action="store_true")
     server_parser.set_defaults(func=cmd_server)

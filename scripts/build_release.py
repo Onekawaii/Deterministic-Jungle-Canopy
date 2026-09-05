@@ -44,6 +44,7 @@ DIRECTORIES = [
     "cards",
     "schemas",
     "docs",
+    "tests",
 ]
 
 FORBIDDEN_PARTS = {".venv", "__pycache__", ".git", ".pytest_cache"}

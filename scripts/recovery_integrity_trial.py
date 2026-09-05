@@ -93,6 +93,34 @@ def run(output_dir: Path) -> int:
            "injected failure propagated and session state remained unchanged" if recovery_unchanged
            else "state changed or injected failure was not observed")
 
+    # Real load exercise: create, mutate, and render multiple independent sessions.
+    load_ok = True
+    load_count = 12
+    load_hashes = []
+    try:
+        for i in range(load_count):
+            load_manifest = ManifestBuilder(seed=seed + 100 + i, width=64, height=64).build()
+            load_session = manager.create_session(load_manifest)
+            load_event = SessionEvent(
+                event_index=0,
+                event_type=EventType.SET_SEED,
+                payload={"seed": seed + 100 + i},
+            )
+            load_event_ok, load_error = manager.apply_event(load_session.session_id, load_event)
+            if not load_event_ok:
+                load_ok = False
+                break
+            _, load_hash = manager.render_session_frame(load_session, 0, 64, 64)
+            load_hashes.append(load_hash)
+    except Exception:
+        load_ok = False
+    load_ok = load_ok and len(load_hashes) == load_count and len(set(load_hashes)) == load_count
+    record(
+        "real_load_sessions_and_renders",
+        load_ok,
+        f"sessions_rendered={len(load_hashes)}/{load_count} unique_hashes={len(set(load_hashes))}",
+    )
+
     # Valid export/import must reproduce pixels.
     exported = manager.export_session(session.session_id)
     imported, import_error = manager.import_session(exported or {})

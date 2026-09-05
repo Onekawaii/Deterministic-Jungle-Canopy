@@ -1,0 +1,7 @@
+WANT project environment is visible and shell works
+ACT cwd
+ACT python
+ACT platform
+DO python --version
+RECKON last_do_passed
+BURY project_check_receipt

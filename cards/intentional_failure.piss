@@ -1,0 +1,5 @@
+WANT prove that failure produces a receipt
+DO python -c "import sys; sys.exit(7)"
+RECKON last_do_passed
+REPAIR inspect command and rerun manually
+BURY failure_receipt

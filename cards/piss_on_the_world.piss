@@ -1,0 +1,9 @@
+# First executable PISS ritual
+WANT piss on the world
+ACT cwd
+ACT python
+ACT platform
+DO echo PISS ON THE WORLD
+RECKON last_do_passed
+RECKON contains PISS ON THE WORLD
+BURY first_world_receipt

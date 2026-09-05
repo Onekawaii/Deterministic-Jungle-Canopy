@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PISS v0.1 Receipt",
+  "type": "object",
+  "required": [
+    "piss_version",
+    "grammar",
+    "timestamp_utc",
+    "program",
+    "goal",
+    "status",
+    "steps",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "piss_version": {"const": "0.1.0"},
+    "grammar": {"const": "WADRRB"},
+    "timestamp_utc": {"type": "string"},
+    "program": {"type": "string"},
+    "goal": {"type": "string"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "steps": {"type": "array"},
+    "receipt_sha256": {"type": "string", "minLength": 64, "maxLength": 64}
+  }
+}

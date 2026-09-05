@@ -38,6 +38,15 @@ if (-not $NoInstall) {
     & $VenvPython -m pip install --disable-pip-version-check -r requirements.txt
 }
 
+$RequestedAcceleration = if ($env:CANOPY_ACCELERATION) { $env:CANOPY_ACCELERATION.ToLowerInvariant() } else { "cpu" }
+if ($RequestedAcceleration -ne "cpu") {
+    Write-Warning "Optional acceleration '$RequestedAcceleration' is unavailable in this release; falling back to CPU."
+    Write-Host "ACCELERATION_REQUESTED=$RequestedAcceleration"
+    Write-Host "ACCELERATION_FALLBACK=CPU"
+} else {
+    Write-Host "ACCELERATION=CPU"
+}
+
 $Url = "http://${BindAddress}:$Port"
 Write-Host ""
 Write-Host "============================================================"

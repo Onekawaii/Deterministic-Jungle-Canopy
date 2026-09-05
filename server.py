@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import io
 import base64
@@ -17,6 +17,7 @@ import numpy as np
 from PIL import Image
 
 from canopy import CanopyRenderer, Archive
+from canopy.version import __version__
 from canopy.effects.presets import PRESETS, list_presets, get_preset_description
 
 

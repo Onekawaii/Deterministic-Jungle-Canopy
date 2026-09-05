@@ -111,8 +111,7 @@ def run(output_dir: Path) -> int:
             time.sleep(0.25)
         record("server_local_bind_health", healthy, base_url)
 
-        status, body = request_json(base_url + "/control-room")
-        # urllib follows the redirect and attempts JSON, so use a raw request for HTML.
+        # urllib follows the redirect; read the real HTML directly.
         try:
             with urllib.request.urlopen(base_url + "/control-room", timeout=10) as resp:
                 html = resp.read()

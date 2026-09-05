@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hardened Autonomous Build Receipt",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "profile",
+    "status",
+    "started_at",
+    "finished_at",
+    "git",
+    "steps",
+    "release",
+    "inputs",
+    "receipt_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "hardened.autonomous.build/1.0"},
+    "profile": {"enum": ["baseline", "hardened"]},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "steps": {"type": "array"},
+    "receipt_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

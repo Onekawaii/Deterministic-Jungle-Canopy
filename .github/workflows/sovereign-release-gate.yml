@@ -19,6 +19,9 @@ jobs:
   windows-release-gate:
     runs-on: windows-latest
     timeout-minutes: 45
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
 
     steps:
       - name: Checkout
@@ -39,7 +42,7 @@ jobs:
         shell: pwsh
         run: |
           $env:CANOPY_ACCELERATION = "cuda"
-          $output = & .\RUN_CANOPY_WINDOWS.ps1 -NoInstall -NoBrowser -SmokeTest -Port 18082 2>&1
+          $output = & .\RUN_CANOPY_WINDOWS.ps1 -NoInstall -NoBrowser -SmokeTest -Port 18082 *>&1
           $text = ($output | Out-String)
           Write-Host $text
           if ($text -notmatch "ACCELERATION_FALLBACK=CPU") { throw "CPU fallback was not visible" }

@@ -1,0 +1,58 @@
+name: Sovereign Release Gate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "canopy/**"
+      - "static/**"
+      - "scripts/**"
+      - "tests/**"
+      - "server.py"
+      - "requirements*.txt"
+      - "RUN_CANOPY_WINDOWS.*"
+      - "VERIFY_SOVEREIGN_RELEASE.ps1"
+      - ".github/workflows/sovereign-release-gate.yml"
+
+jobs:
+  windows-release-gate:
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create verification environment
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip
+          .\.venv\Scripts\python.exe -m pip install -r requirements-release.txt
+          .\.venv\Scripts\python.exe -m playwright install chromium
+
+      - name: Fresh launcher smoke
+        shell: pwsh
+        run: |
+          .\RUN_CANOPY_WINDOWS.ps1 -NoInstall -NoBrowser -SmokeTest -Port 18081
+
+      - name: Full Sovereign release gate
+        shell: pwsh
+        run: |
+          .\.venv\Scripts\python.exe scripts\sovereign_release_gate.py
+
+      - name: Upload release receipts and archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sovereign-canopy-release-gate
+          path: |
+            receipts/release_gate/**
+            dist/**
+          if-no-files-found: warn

@@ -677,10 +677,19 @@ async def apply_event(session_id: str, req: EventRequest):
     if session.status != SessionStatus.ACTIVE:
         raise HTTPException(409, f"Session is {session.status.value}")
     
-    # Create event
+    # Validate event type before constructing or mutating anything.
+    try:
+        event_type = EventType(req.event_type)
+    except ValueError:
+        allowed = ", ".join(sorted(e.value for e in EventType))
+        raise HTTPException(
+            400,
+            f"Unknown event type '{req.event_type}'. Allowed: {allowed}"
+        )
+
     event = SessionEvent(
         event_index=len(session.events),
-        event_type=EventType(req.event_type),
+        event_type=event_type,
         payload=req.payload,
     )
     
@@ -1368,10 +1377,21 @@ async def import_session(data: Dict[str, Any]):
         # Migrate if needed
         migrated = migrate_session(data)
         
-        # Create session
+        # Create session. SessionManager returns (session, error).
         session_manager = get_session_manager()
-        session = session_manager.import_session(migrated)
-        
+        session, import_error = session_manager.import_session(migrated)
+
+        if session is None:
+            return JSONResponse(
+                {
+                    "error": {
+                        "code": "IMPORT_FAILED",
+                        "message": import_error or "Session import failed",
+                    }
+                },
+                status_code=400,
+            )
+
         return {"session_id": session.session_id, "imported": True}
     except Exception as e:
         error = handle_exception(e)
@@ -1424,11 +1444,12 @@ async def export_frame(session_id: str, frame: int):
     if not session:
         raise HTTPException(404, f"Session {session_id} not found")
     
-    # Render frame
+    # Render frame and convert the canonical float image to PNG bytes.
     frame_data, _ = session_manager.render_session_frame(session, frame, 256, 256)
-    
+    image_data = (np.clip(frame_data, 0, 1) * 255).astype(np.uint8)
+
     buffer = io.BytesIO()
-    Image.fromarray(frame_data).save(buffer, format="PNG")
+    Image.fromarray(image_data).save(buffer, format="PNG")
     buffer.seek(0)
     
     return StreamingResponse(
@@ -1472,24 +1493,25 @@ async def export_frame_sequence(
         frame_manifest = []
         
         for i, frame_idx in enumerate(frame_indices):
-            # Render frame
-            frame_data, metadata = session_manager.render_session_frame(
+            # Render frame. The manager returns (frame_array, pixel_hash).
+            frame_data, pixel_hash = session_manager.render_session_frame(
                 session, frame_idx, 256, 256
             )
-            
-            # Save PNG with deterministic name (zero-padded)
+
+            # Save PNG with deterministic name (zero-padded).
+            image_data = (np.clip(frame_data, 0, 1) * 255).astype(np.uint8)
             png_buffer = io.BytesIO()
-            Image.fromarray(frame_data).save(png_buffer, format="PNG")
+            Image.fromarray(image_data).save(png_buffer, format="PNG")
             png_bytes = png_buffer.getvalue()
-            
+
             frame_name = f"frames/{i:04d}.png"
             zf.writestr(frame_name, png_bytes)
-            
-            # Record frame info
+
+            # Record frame info.
             frame_manifest.append({
                 "index": i,
                 "original_frame": frame_idx,
-                "pixel_hash": metadata.get("pixel_hash", ""),
+                "pixel_hash": pixel_hash,
                 "size_bytes": len(png_bytes)
             })
         

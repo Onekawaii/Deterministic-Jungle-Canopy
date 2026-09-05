@@ -1362,7 +1362,6 @@ async def validate_import(data: Dict[str, Any]):
 async def import_session(data: Dict[str, Any]):
     """Import a session."""
     from canopy.security import validate_import_payload
-    from canopy.schema import migrate_session, validate_session
     from canopy.errors import handle_exception
     
     try:
@@ -1374,12 +1373,10 @@ async def import_session(data: Dict[str, Any]):
                 status_code=400
             )
         
-        # Migrate if needed
-        migrated = migrate_session(data)
-        
-        # Create session. SessionManager returns (session, error).
+        # Import the validated portable payload. SessionManager accepts either
+        # the export wrapper {"session": ...} or a raw session dictionary.
         session_manager = get_session_manager()
-        session, import_error = session_manager.import_session(migrated)
+        session, import_error = session_manager.import_session(data)
 
         if session is None:
             return JSONResponse(

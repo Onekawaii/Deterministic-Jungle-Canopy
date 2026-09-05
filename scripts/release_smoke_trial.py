@@ -1,398 +1,210 @@
 #!/usr/bin/env python3
-"""
-Release Smoke Trial 🚬
-Extracts and tests the release package.
-"""
-import sys
-import os
-import json
-import shutil
-import tempfile
-import subprocess
-import time
-import zipfile
-import io
-from datetime import datetime, timezone
-from dataclasses import dataclass, asdict
-from typing import List, Optional
+"""Strict extracted-release smoke trial. HTTP errors never count as success."""
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from __future__ import annotations
+
+import argparse
+import io
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+import zipfile
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 @dataclass
-class TrialAssertion:
+class Check:
     name: str
     passed: bool
-    details: str = ""
+    details: str
 
 
-class ReleaseSmokeTrial:
-    def __init__(self, output_dir: str = "receipts"):
-        self.output_dir = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            output_dir
-        )
-        os.makedirs(self.output_dir, exist_ok=True)
-        
-        self.assertions: List[TrialAssertion] = []
-        self.started_at = datetime.now(timezone.utc).isoformat() + "Z"
-        self.work_dir = None
-        self.extract_dir = None
-        self.server_process = None
-        self.server_url = "http://localhost:18000"
-        
-    def log(self, message: str, level: str = "INFO"):
-        prefix = {"INFO": "📋", "PASS": "✅", "FAIL": "❌"}.get(level, "  ")
-        print(f"{prefix} {message}")
-    
-    def record(self, name: str, passed: bool, details: str = ""):
-        self.assertions.append(TrialAssertion(name, passed, details))
-        self.log(f"{name}: {details}", "PASS" if passed else "FAIL")
-    
-    def run(self):
-        print("\n" + "=" * 60)
-        print("  🚬 RELEASE SMOKE TRIAL - v1.0.0 🚬")
-        print("=" * 60 + "\n")
-        
-        self.work_dir = tempfile.mkdtemp(prefix="canopy_smoke_")
-        self.log(f"Working directory: {self.work_dir}")
-        
+def request_json(url: str, method: str = "GET", payload: dict | None = None, timeout: int = 15):
+    data = None
+    headers = {}
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            body = response.read()
+            return response.status, json.loads(body) if body else {}
+    except urllib.error.HTTPError as exc:
+        body = exc.read()
         try:
-            # Step 1: Find and extract release ZIP
-            self._extract_release()
-            
-            # Step 2: Run doctor
-            self._run_doctor()
-            
-            # Step 3: Start server
-            self._start_server()
-            
-            # Step 4: Health check
-            self._test_health()
-            
-            # Step 5: Control room route
-            self._test_control_room()
-            
-            # Step 6: Create session
-            self._test_create_session()
-            
-            # Step 7: Render frame
-            self._test_render_frame()
-            
-            # Step 8: Export/import
-            self._test_export_import()
-            
-            # Step 9: Frame sequence export
-            self._test_sequence_export()
-            
-        finally:
-            self._cleanup()
-        
-        return self._generate_receipt()
-    
-    def _extract_release(self):
-        """Extract release ZIP."""
-        release_zip = "dist/deterministic-jungle-canopy-v1.0.0.zip"
-        
-        if not os.path.exists(release_zip):
-            # Try to build first
-            self.log("Release ZIP not found, building...")
-            result = subprocess.run(
-                [sys.executable, "scripts/build_release.py"],
-                capture_output=True, text=True, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            )
+            parsed = json.loads(body) if body else {}
+        except Exception:
+            parsed = {"raw": body.decode("utf-8", "replace")}
+        return exc.code, parsed
+
+
+def run(output_dir: Path) -> int:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    checks: list[Check] = []
+    work_dir = Path(tempfile.mkdtemp(prefix="canopy_release_smoke_"))
+    server = None
+    base_url = "http://127.0.0.1:18000"
+
+    def record(name: str, passed: bool, details: str):
+        checks.append(Check(name, passed, details))
+        print(("PASS" if passed else "FAIL") + f" {name}: {details}")
+
+    try:
+        zip_path = ROOT / "dist" / "deterministic-jungle-canopy-v1.0.0.zip"
+        if not zip_path.exists():
+            result = subprocess.run([sys.executable, "scripts/build_release.py"], cwd=ROOT)
             if result.returncode != 0:
-                self.record("extract_release", False, "Build failed")
-                return
-        
-        try:
-            self.extract_dir = os.path.join(self.work_dir, "release")
-            
-            with zipfile.ZipFile(release_zip, 'r') as zf:
-                zf.extractall(self.extract_dir)
-            
-            # Check if there's a nested directory
-            contents = os.listdir(self.extract_dir)
-            if len(contents) == 1 and os.path.isdir(os.path.join(self.extract_dir, contents[0])):
-                # Move contents up one level
-                nested_dir = os.path.join(self.extract_dir, contents[0])
-                for item in os.listdir(nested_dir):
-                    shutil.move(os.path.join(nested_dir, item), os.path.join(self.extract_dir, item))
-                os.rmdir(nested_dir)
-            
-            self.record("extract_release", True, f"Extracted to {self.extract_dir}")
-        except Exception as e:
-            self.record("extract_release", False, str(e))
-    
-    def _run_doctor(self):
-        """Run doctor script in extracted release."""
-        # Find doctor script - might be in scripts/ subdirectory
-        possible_paths = [
-            os.path.join(self.extract_dir, "scripts", "doctor.py"),
-            os.path.join(self.extract_dir, "doctor.py"),
+                record("build_release", False, f"exit={result.returncode}")
+                return 1
+        record("release_archive_exists", zip_path.exists(), str(zip_path))
+
+        extract_root = work_dir / "release"
+        with zipfile.ZipFile(zip_path, "r") as zf:
+            bad = zf.testzip()
+            names = zf.namelist()
+            record("zip_integrity", bad is None, f"bad_entry={bad}")
+            zf.extractall(extract_root)
+
+        children = list(extract_root.iterdir())
+        release_root = children[0] if len(children) == 1 and children[0].is_dir() else extract_root
+
+        forbidden = [
+            n for n in names
+            if any(part in {".venv", "__pycache__", ".git"} for part in Path(n).parts)
+            or n.endswith((".pyc", ".db", ".db-wal", ".db-shm"))
+            or any(token in n.lower() for token in ("secret", ".env"))
         ]
-        
-        doctor_script = None
-        for p in possible_paths:
-            if os.path.exists(p):
-                doctor_script = p
+        record("release_excludes_forbidden_artifacts", not forbidden, ", ".join(forbidden[:10]) or "clean")
+
+        doctor = release_root / "scripts" / "doctor.py"
+        result = subprocess.run([sys.executable, str(doctor)], cwd=release_root, capture_output=True, text=True)
+        record("doctor", result.returncode == 0, f"exit={result.returncode}")
+
+        server = subprocess.Popen(
+            [sys.executable, "-m", "uvicorn", "server:app", "--host", "127.0.0.1", "--port", "18000"],
+            cwd=release_root,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        healthy = False
+        for _ in range(80):
+            if server.poll() is not None:
                 break
-        
-        if not doctor_script:
-            self.record("doctor", False, f"Doctor script not found. Contents: {os.listdir(self.extract_dir) if self.extract_dir else 'None'}")
-            return
-        
+            try:
+                status, body = request_json(base_url + "/api/health/detail")
+                if status == 200 and body.get("status") == "healthy":
+                    healthy = True
+                    break
+            except Exception:
+                pass
+            time.sleep(0.25)
+        record("server_local_bind_health", healthy, base_url)
+
+        status, body = request_json(base_url + "/control-room")
+        # urllib follows the redirect and attempts JSON, so use a raw request for HTML.
         try:
-            result = subprocess.run(
-                [sys.executable, doctor_script],
-                capture_output=True, text=True,
-                cwd=os.path.dirname(doctor_script)
+            with urllib.request.urlopen(base_url + "/control-room", timeout=10) as resp:
+                html = resp.read()
+                control_ok = resp.status == 200 and b"growJungleBtn" in html
+        except Exception:
+            control_ok = False
+        record("control_room_real_html", control_ok, "Grow Jungle control present" if control_ok else "control room missing")
+
+        status, created = request_json(base_url + "/api/session", "POST", {})
+        sid = created.get("session_id")
+        record("api_create_session", status in (200, 201) and bool(sid), f"http={status} sid={sid}")
+
+        if sid:
+            status, frame = request_json(base_url + f"/api/session/{sid}/frame/0")
+            frame_ok = (
+                status == 200
+                and bool(frame.get("image_base64"))
+                and bool(frame.get("pixel_hash"))
+                and bool(frame.get("manifest_hash"))
             )
-            
-            # Doctor returns 0 if all checks pass
-            passed = result.returncode == 0
-            self.record("doctor", passed, f"Exit code: {result.returncode}" if not passed else "All checks passed")
-        except Exception as e:
-            self.record("doctor", False, str(e))
-    
-    def _start_server(self):
-        """Start the server from extracted release."""
-        server_script = os.path.join(self.extract_dir, "server.py") if self.extract_dir else None
-        
-        if not server_script or not os.path.exists(server_script):
-            self.record("server_start", False, f"Server script not found. Contents: {os.listdir(self.extract_dir) if self.extract_dir else 'None'}")
-            return
-        
-        try:
-            # Start uvicorn
-            self.server_process = subprocess.Popen(
-                [sys.executable, "-m", "uvicorn", "server:app", "--host", "127.0.0.1", "--port", "18000"],
-                cwd=self.extract_dir,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            
-            # Wait for server to start
-            time.sleep(3)
-            
-            if self.server_process.poll() is None:
-                self.record("server_start", True, f"Server started on port 18000 (PID: {self.server_process.pid})")
+            record("api_render_frame", frame_ok, f"http={status} pixel_hash={frame.get('pixel_hash')}")
+
+            status, exported = request_json(base_url + f"/api/export/session/{sid}")
+            export_ok = status == 200 and "session" in exported
+            record("api_export_session", export_ok, f"http={status}")
+
+            if export_ok:
+                status, imported = request_json(base_url + "/api/import/session", "POST", exported)
+                import_ok = status == 200 and imported.get("imported") is True
             else:
-                self.record("server_start", False, "Server exited immediately")
-        except Exception as e:
-            self.record("server_start", False, str(e))
-    
-    def _test_health(self):
-        """Test health endpoint."""
-        try:
-            import urllib.request
-            
-            req = urllib.request.urlopen(f"{self.server_url}/api/health/detail", timeout=5)
-            data = json.loads(req.read())
-            
-            passed = data.get("status") == "healthy"
-            self.record("health_endpoint", passed, f"Status: {data.get('status')}")
-        except Exception as e:
-            self.record("health_endpoint", False, str(e))
-    
-    def _test_control_room(self):
-        """Test control room route."""
-        try:
-            import urllib.request
-            
-            req = urllib.request.urlopen(f"{self.server_url}/control-room", timeout=5)
-            content = req.read()
-            
-            # Should redirect or return HTML
-            passed = len(content) > 0
-            self.record("control_room_route", passed, f"Response size: {len(content)} bytes")
-        except Exception as e:
-            self.record("control_room_route", False, str(e))
-    
-    def _test_create_session(self):
-        """Test session creation via API."""
-        try:
-            import urllib.request
-            
-            # Create session
-            data = json.dumps({
-                "seed": 42,
-                "width": 256,
-                "height": 256,
-                "effects": {"bloom": {"threshold": 0.8}}
-            }).encode()
-            
-            req = urllib.request.Request(
-                f"{self.server_url}/api/session",
-                data=data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            resp = urllib.request.urlopen(req, timeout=5)
-            result = json.loads(resp.read())
-            
-            self.session_id = result.get("session_id", "")
-            passed = bool(self.session_id)
-            self.record("create_session", passed, f"Session: {self.session_id}" if passed else "No session_id returned")
-        except Exception as e:
-            self.record("create_session", False, str(e))
-    
-    def _test_render_frame(self):
-        """Test frame rendering."""
-        if not hasattr(self, 'session_id') or not self.session_id:
-            self.record("render_frame", False, "No session created")
-            return
-        
-        try:
-            import urllib.request
-            
-            # Use the render endpoint - POST with session_id
-            render_data = json.dumps({
-                "session_id": self.session_id,
-                "frame_index": 0,
-                "width": 256,
-                "height": 256
-            }).encode()
-            
-            req = urllib.request.Request(
-                f"{self.server_url}/api/render",
-                data=render_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
+                status, import_ok = 0, False
+            record("api_import_session", import_ok, f"http={status}")
+
             try:
-                resp = urllib.request.urlopen(req, timeout=15)
-                passed = resp.status == 200
-                self.record("render_frame", passed, f"Status: {resp.status}")
-            except urllib.error.HTTPError as e:
-                # Server accepts render but session might not be active
-                passed = e.code in [200, 404, 500]  # Any response means endpoint works
-                self.record("render_frame", True, f"Endpoint accessible (HTTP {e.code})")
-        except Exception as e:
-            self.record("render_frame", False, str(e))
-    
-    def _test_export_import(self):
-        """Test export/import round-trip."""
-        if not hasattr(self, 'session_id') or not self.session_id:
-            self.record("export_import", False, "No session created")
-            return
-        
-        try:
-            import urllib.request
-            
-            # Export session
-            req = urllib.request.urlopen(
-                f"{self.server_url}/api/export/session/{self.session_id}",
-                timeout=5
-            )
-            exported_data = json.loads(req.read())
-            
-            # Import session
-            import_data = json.dumps(exported_data).encode()
-            import_req = urllib.request.Request(
-                f"{self.server_url}/api/import/session",
-                data=import_data,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            try:
-                resp = urllib.request.urlopen(import_req, timeout=5)
-                result = json.loads(resp.read())
-                passed = result.get("imported") == True
-                self.record("export_import", passed, "Round-trip successful" if passed else "Import failed")
-            except urllib.error.HTTPError as e:
-                # Endpoints exist even if they fail
-                passed = e.code in [200, 400, 404, 500]
-                self.record("export_import", passed, f"Endpoint accessible (HTTP {e.code})")
-        except Exception as e:
-            self.record("export_import", False, str(e))
-    
-    def _test_sequence_export(self):
-        """Test frame sequence export."""
-        if not hasattr(self, 'session_id') or not self.session_id:
-            self.record("sequence_export", False, "No session created")
-            return
-        
-        try:
-            import urllib.request
-            
-            # Export sequence (small range for speed)
-            try:
-                req = urllib.request.urlopen(
-                    f"{self.server_url}/api/export/session/{self.session_id}/sequence?start_frame=0&end_frame=5",
-                    timeout=30
-                )
-                
-                # Read ZIP
-                zip_data = req.read()
-                
-                # Verify it's a valid ZIP
-                with zipfile.ZipFile(io.BytesIO(zip_data), 'r') as zf:
-                    names = zf.namelist()
-                    has_manifest = "manifest.json" in names
-                    has_frames = any("frames/" in n for n in names)
-                
-                passed = has_manifest and has_frames
-                self.record("sequence_export", passed, f"ZIP has manifest={has_manifest}, frames={has_frames}")
-            except urllib.error.HTTPError as e:
-                # Endpoint exists even if it fails
-                passed = e.code in [200, 400, 404, 500]
-                self.record("sequence_export", passed, f"Endpoint accessible (HTTP {e.code})")
-        except Exception as e:
-            self.record("sequence_export", False, str(e))
-    
-    def _cleanup(self):
-        """Stop server and cleanup."""
-        if self.server_process:
-            try:
-                self.server_process.terminate()
-                self.server_process.wait(timeout=5)
-            except:
-                self.server_process.kill()
-        
-        if self.work_dir and os.path.exists(self.work_dir):
-            shutil.rmtree(self.work_dir)
-    
-    def _generate_receipt(self):
-        passed = sum(1 for a in self.assertions if a.passed)
-        failed = len(self.assertions) - passed
-        
+                with urllib.request.urlopen(
+                    base_url + f"/api/export/session/{sid}/sequence?start_frame=0&end_frame=2",
+                    timeout=30,
+                ) as resp:
+                    zip_bytes = resp.read()
+                    sequence_status = resp.status
+                with zipfile.ZipFile(io.BytesIO(zip_bytes), "r") as zf:
+                    seq_names = zf.namelist()
+                    sequence_ok = (
+                        sequence_status == 200
+                        and "manifest.json" in seq_names
+                        and any(n.startswith("frames/") and n.endswith(".png") for n in seq_names)
+                    )
+            except Exception:
+                sequence_ok = False
+            record("api_sequence_export", sequence_ok, "real ZIP with manifest and PNG frames" if sequence_ok else "sequence export failed")
+
+        passed = sum(1 for c in checks if c.passed)
+        failed = len(checks) - passed
         receipt = {
             "schema_version": "1.0",
             "engine_version": "1.0.0",
             "trial_type": "release_smoke",
-            "trial_timestamp": datetime.now(timezone.utc).isoformat() + "Z",
-            "trial_started": self.started_at,
-            "release_zip": "dist/deterministic-jungle-canopy-v1.0.0.zip",
-            "results": [asdict(a) for a in self.assertions],
-            "workflow_steps": len(self.assertions),
-            "assertions_total": len(self.assertions),
-            "assertions_passed": passed,
-            "assertions_failed": failed,
-            "assertions_skipped": 0,
-            "all_passed": failed == 0,
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "release_zip": str(zip_path),
+            "bind_address": "127.0.0.1",
+            "results": [asdict(c) for c in checks],
+            "summary": {
+                "total_assertions": len(checks),
+                "passed": passed,
+                "failed": failed,
+                "all_passed": failed == 0,
+            },
         }
-        
-        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-        receipt_path = os.path.join(self.output_dir, f"release_smoke_trial_{timestamp}.json")
-        
-        with open(receipt_path, 'w') as f:
-            json.dump(receipt, f, indent=2)
-        
-        print("\n" + "=" * 60)
-        print("  RELEASE SMOKE TRIAL SUMMARY")
-        print("=" * 60)
-        print(f"\n  Assertions: {len(self.assertions)}")
-        print(f"  Passed:    {passed} ✅")
-        print(f"  Failed:    {failed} ❌")
-        print(f"  Receipt:   {receipt_path}")
-        
-        if failed == 0:
-            print("\n  🍌 ALL RELEASE SMOKE ASSERTIONS PASSED 🍌")
-        
-        return receipt
+        receipt_path = output_dir / (
+            "release_smoke_trial_"
+            + datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+            + ".json"
+        )
+        receipt_path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
+        print(f"RECEIPT={receipt_path}")
+        return 0 if failed == 0 else 1
+    finally:
+        if server is not None and server.poll() is None:
+            server.terminate()
+            try:
+                server.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                server.kill()
+        shutil.rmtree(work_dir, ignore_errors=True)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output", default="receipts/release_gate/release_smoke")
+    args = parser.parse_args()
+    return run(Path(args.output))
 
 
 if __name__ == "__main__":
-    trial = ReleaseSmokeTrial()
-    trial.run()
+    raise SystemExit(main())

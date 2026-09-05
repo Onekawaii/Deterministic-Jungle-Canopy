@@ -29,18 +29,27 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Create verification environment
+      - name: Fresh-clone launcher install and smoke
         shell: pwsh
         run: |
-          python -m venv .venv
-          .\.venv\Scripts\python.exe -m pip install --upgrade pip
+          if (Test-Path .venv) { Remove-Item -Recurse -Force .venv }
+          .\RUN_CANOPY_WINDOWS.ps1 -NoBrowser -SmokeTest -Port 18081
+
+      - name: Visible optional-acceleration fallback
+        shell: pwsh
+        run: |
+          $env:CANOPY_ACCELERATION = "cuda"
+          $output = & .\RUN_CANOPY_WINDOWS.ps1 -NoInstall -NoBrowser -SmokeTest -Port 18082 2>&1
+          $text = ($output | Out-String)
+          Write-Host $text
+          if ($text -notmatch "ACCELERATION_FALLBACK=CPU") { throw "CPU fallback was not visible" }
+          Remove-Item Env:CANOPY_ACCELERATION
+
+      - name: Add release verification dependencies
+        shell: pwsh
+        run: |
           .\.venv\Scripts\python.exe -m pip install -r requirements-release.txt
           .\.venv\Scripts\python.exe -m playwright install chromium
-
-      - name: Fresh launcher smoke
-        shell: pwsh
-        run: |
-          .\RUN_CANOPY_WINDOWS.ps1 -NoInstall -NoBrowser -SmokeTest -Port 18081
 
       - name: Full Sovereign release gate
         shell: pwsh

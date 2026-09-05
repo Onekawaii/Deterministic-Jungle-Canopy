@@ -13,7 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:\n    sys.path.insert(0, str(ROOT))\n\nfrom canopy.version import __version__, __schema_version__\n\nRECEIPT_ROOT = ROOT / "receipts" / "release_gate"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from canopy.version import __version__, __schema_version__
+
+RECEIPT_ROOT = ROOT / "receipts" / "release_gate"
 LOG_ROOT = RECEIPT_ROOT / "logs"
 
 
@@ -137,13 +142,22 @@ def main() -> int:
         all_required_passed = False
 
     receipt = {
-        "schema_version": "1.0",\n        "engine_version": __version__,\n        "manifest_schema_version": __schema_version__,\n        "gate": "sovereign_canopy_verified_distribution",
+        "schema_version": "1.0",
+        "engine_version": __version__,
+        "manifest_schema_version": __schema_version__,
+        "gate": "sovereign_canopy_verified_distribution",
         "issue": 1,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "python": sys.version.split()[0],
         "platform": sys.platform,
         "working_directory": str(ROOT),
-        "local_only_bind_default": "127.0.0.1",\n        "acceleration": {\n            "default": "cpu",\n            "selected": "cpu",\n            "optional_backend_request": os.environ.get("CANOPY_ACCELERATION"),\n        },\n        "steps": steps,
+        "local_only_bind_default": "127.0.0.1",
+        "acceleration": {
+            "default": "cpu",
+            "selected": "cpu",
+            "optional_backend_request": os.environ.get("CANOPY_ACCELERATION"),
+        },
+        "steps": steps,
         "totals": {
             "unit_tests": unit_total,
             "determinism_total": summary_count(det_receipt, "total_tests"),

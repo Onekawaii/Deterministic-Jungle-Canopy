@@ -23,6 +23,13 @@ import shutil
 import subprocess
 import platform
 from datetime import datetime, timezone
+
+# Windows CI and legacy consoles may default to cp1252. Receipts must not
+# depend on terminal encoding, so console output degrades safely to UTF-8.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from pathlib import Path
 
 # Add parent directory to path

@@ -81,13 +81,20 @@ def run_doctor():
     # Check storage
     print("\n📋 Checking storage...")
     try:
+        import tempfile
+        from pathlib import Path
         from canopy.storage import SessionStore
-        test_db = "canopy_test_doctor.db"
-        if os.path.exists(test_db):
-            os.remove(test_db)
-        store = SessionStore(test_db)
-        print(f"  ✅ Session store: OK")
-        os.remove(test_db)
+
+        with tempfile.TemporaryDirectory(prefix="canopy_doctor_") as td:
+            test_db = Path(td) / "canopy_test_doctor.db"
+            store = SessionStore(str(test_db))
+            try:
+                integrity = store.check_integrity()
+                if not integrity.get("integrity_valid", False):
+                    raise RuntimeError("; ".join(integrity.get("issues", [])) or "storage integrity failed")
+                print("  ✅ Session store: OK")
+            finally:
+                store.close()
     except Exception as e:
         issues.append(f"Session store error: {e}")
     

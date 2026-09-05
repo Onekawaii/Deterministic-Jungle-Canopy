@@ -517,7 +517,7 @@ class SessionStore:
         conn = self._get_connection()
         
         # Check for null session_ids
-        cursor = conn.execute("SELECT id FROM sessions WHERE session_id IS NULL")
+        cursor = conn.execute("SELECT session_id FROM sessions WHERE session_id IS NULL")
         if cursor.fetchone():
             issues.append("Found sessions with NULL session_id")
         

@@ -502,6 +502,13 @@ class SessionStore:
             "db_size_bytes": self.db_path.stat().st_size if self.db_path.exists() else 0,
         }
     
+    def close(self) -> None:
+        """Close this thread's SQLite connection, if open."""
+        conn = getattr(self._local, "conn", None)
+        if conn is not None:
+            conn.close()
+            self._local.conn = None
+
     def check_integrity(self) -> Dict[str, Any]:
         """Check storage integrity."""
         issues = []

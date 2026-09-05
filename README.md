@@ -278,3 +278,29 @@ MIT
 ---
 
 **🍌 The jungle is deterministic. The seed is covenant. The event is scripture. 🍌**
+
+
+---
+
+## 🪟 Windows Verified Distribution
+
+Fresh-clone launcher:
+
+```powershell
+cd "<path>\Deterministic-Jungle-Canopy"
+.\RUN_CANOPY_WINDOWS.ps1
+```
+
+or double-click `RUN_CANOPY_WINDOWS.cmd`.
+
+The launcher changes into its own directory before doing any work, so it does not fall into `C:\Windows\System32`. It binds to `127.0.0.1` by default and prints the exact listening URL as `CANOPY_LISTENING=...`. Remote binding requires an explicit `-AllowRemote`.
+
+Full release gate:
+
+```powershell
+.\VERIFY_SOVEREIGN_RELEASE.ps1
+```
+
+This creates real receipts under `receipts/release_gate/`, builds the clean distribution under `dist/`, and verifies unit tests, determinism, real load/recovery failure injection, extracted-release API behavior, and image transport through the real browser Control Room.
+
+See `docs/SOVEREIGN_RELEASE_GATE.md` for the exact contract.
